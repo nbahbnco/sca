@@ -19,8 +19,8 @@ policy:
     - https://www.cisecurity.org/cis-benchmarks/
 
 requirements:
-  title: "Check that the Windows platform is Windows Server 2022"
-  description: "Requirements for running the CIS benchmark under Windows Server 2022"
+  title: "Comprobar que la plataforma Windows es Windows Server 2022"
+  description: "Requisitos para ejecutar el benchmark CIS en Windows Server 2022"
   condition: any
   rules:
     - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows Server 2022'
@@ -208,11 +208,11 @@ checks:
 
  # 2.3.7.4 (L1) Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'. (Automated)
   - id: 126025
-    title: "Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'."
-    description: "Windows notices inactivity of a logon session, and if the amount of inactive time exceeds the inactivity limit, then the screen saver will run, locking the session. The recommended state for this setting is: 900 or fewer second(s), but not 0. Note: A value of 0 does not conform to the benchmark as it disables the machine inactivity limit."
-    rationale: "If a user forgets to lock their computer when they walk away it's possible that a passerby will hijack it."
-    impact: "The screen saver will automatically activate when the computer has been unattended for the amount of time specified. The impact should be minimal since the screen saver is enabled by default."
-    remediation: "To establish the recommended configuration via GP, set the following UI path to 900 or fewer seconds, but not 0: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Machine inactivity limit."
+    title: "Asegurar que 'Inicio de sesión interactivo: Límite de inactividad del equipo' está configurado como '900 segundos o menos, pero no 0'."
+    description: "Windows detecta la inactividad de una sesión de inicio de sesión y, si el tiempo de inactividad supera el límite configurado, se inicia el protector de pantalla bloqueando la sesión. El estado recomendado para esta configuración es: 900 segundos o menos, pero no 0. Nota: Un valor de 0 no se ajusta al benchmark, ya que deshabilita el límite de inactividad del equipo."
+    rationale: "Si un usuario olvida bloquear su equipo al ausentarse, es posible que otra persona que pase cerca pueda hacerse con el control de la sesión."
+    impact: "El protector de pantalla se activará automáticamente cuando el equipo haya estado desatendido durante el tiempo especificado. El impacto debería ser mínimo, ya que el protector de pantalla está habilitado de forma predeterminada."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 900 segundos o menos, pero no 0: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Directivas locales\\Opciones de seguridad\\Inicio de sesión interactivo: Límite de inactividad del equipo."
     references:
       - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-machine-inactivity-limit'
     compliance:
@@ -234,11 +234,11 @@ checks:
 
  # 2.3.7.5 (L1) Configure 'Interactive logon: Message text for users attempting to log on'. (Automated)
   - id: 126026
-    title: "Configure 'Interactive logon: Message text for users attempting to log on'."
-    description: "This policy setting specifies a text message that displays to users when they log on. Set the following group policy to a value that is consistent with the security and operational requirements of your organization."
-    rationale: "Displaying a warning message before logon may help prevent an attack by warning the attacker about the consequences of their misconduct before it happens. It may also help to reinforce corporate policy by notifying employees of the appropriate policy during the logon process. This text is often used for legal reasons-for example, to warn users about the rami"    
-    impact: "Users will have to acknowledge a dialog box containing the configured text before they can log on to the computer. Note: Windows Vista and Windows XP Professional support logon banners that can exceed 512 characters in length and that can also contain carriage-return line-feed sequences. However, Windows 2000-based clients cannot interpret and display these mes"
-    remediation: "To establish the recommended configuration via GP, configure the following UI path to a value that is consistent with the security and operational requirements of your organization: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Message text for users attempting to log on."
+    title: "Configurar 'Inicio de sesión interactivo: Texto del mensaje para los usuarios que intentan iniciar sesión'."
+    description: "Esta configuración de directiva especifica el mensaje de texto que se muestra a los usuarios cuando inician sesión. Establezca esta directiva de grupo con un valor coherente con los requisitos de seguridad y operativos de su organización."
+    rationale: "Mostrar un mensaje de advertencia antes del inicio de sesión puede ayudar a evitar ataques advirtiendo al posible atacante sobre las consecuencias de su conducta antes de que se produzca. También puede ayudar a reforzar la política corporativa recordando a los empleados la política aplicable durante el proceso de inicio de sesión. Este texto se utiliza a menudo por razones legales, por ejemplo, para advertir a los usuarios sobre las implicaciones del uso indebido del sistema."
+    impact: "Los usuarios tendrán que aceptar un cuadro de diálogo que contiene el texto configurado antes de poder iniciar sesión en el equipo. Nota: Algunas versiones antiguas de Windows tienen limitaciones en la longitud y el formato de estos mensajes de inicio de sesión."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI con un valor coherente con los requisitos de seguridad y operativos de su organización: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Directivas locales\\Opciones de seguridad\\Inicio de sesión interactivo: Texto del mensaje para los usuarios que intentan iniciar sesión."
     references:
       - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-message-text-for-users-attempting-to-log-on'
     compliance:
@@ -248,11 +248,11 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system\legalnoticetext'
  # 2.3.7.6 (L1) Configure 'Interactive logon: Message title for users attempting to log on'. (Automated)
   - id: 126027
-    title: "Configure 'Interactive logon: Message title for users attempting to log on'."
-    description: "This policy setting specifies the text displayed in the title bar of the window that users see when they log on to the system. Configure this setting in a manner that is consistent with the security and operational requirements of your organization."
-    rationale: "Displaying a warning message before logon may help prevent an attack by warning the attacker about the consequences of their misconduct before it happens. It may also help to reinforce corporate policy by notifying employees of the appropriate policy during the logon process."
-    impact: "Users will have to acknowledge a dialog box with the configured title before they can log on to the computer."
-    remediation: "To establish the recommended configuration via GP, configure the following UI path to a value that is consistent with the security and operational requirements of your organization: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Message title for users attempting to log on."
+    title: "Configurar 'Inicio de sesión interactivo: Título del mensaje para los usuarios que intentan iniciar sesión'."
+    description: "Esta configuración de directiva especifica el texto que se muestra en la barra de título de la ventana que ven los usuarios cuando inician sesión en el sistema. Configure este ajuste de forma coherente con los requisitos de seguridad y operativos de su organización."
+    rationale: "Mostrar un mensaje de advertencia antes del inicio de sesión puede ayudar a evitar ataques advirtiendo al posible atacante sobre las consecuencias de su conducta antes de que se produzca. También puede ayudar a reforzar la política corporativa recordando a los empleados la política aplicable durante el proceso de inicio de sesión."
+    impact: "Los usuarios tendrán que aceptar un cuadro de diálogo con el título configurado antes de poder iniciar sesión en el equipo."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI con un valor coherente con los requisitos de seguridad y operativos de su organización: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Directivas locales\\Opciones de seguridad\\Inicio de sesión interactivo: Título del mensaje para los usuarios que intentan iniciar sesión."
     references:
       - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-message-title-for-users-attempting-to-log-on'
     compliance:
