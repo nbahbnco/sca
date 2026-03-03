@@ -1,0 +1,302 @@
+# Security Configuration Assessment
+# CIS Checks for Windows 2022 RTM
+# Copyright (C) 2015, Wazuh Inc.
+#
+# This program is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation
+#
+# Based on:
+# Center for Internet Security Benchmark for Microsoft Windows Server 2022 v2.0.0 - 04-14-2023
+
+policy:
+  id: "basic_win"
+  file: "basic_win.yml"
+  name: "Politica Basica de Windows"
+  description: "Esta politica establece unas normas basicas. Adaptadas para funcionar en español"
+  references:
+    - https://www.cisecurity.org/cis-benchmarks/
+
+requirements:
+  title: "Check that the Windows platform is Windows Server 2022"
+  description: "Requirements for running the CIS benchmark under Windows Server 2022"
+  condition: any
+  rules:
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows Server 2022'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows Server 2025'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows Server 2019'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows 11 Pro'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows 11 Enterprise'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows 10 Enterprise'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows 10 Pro'
+    - 'r:HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion -> ProductName -> r:^Windows.*'
+
+checks:
+  # 1.1.1 (L1) Ensure 'Enforce password history' is set to '24 or more password(s)' (Automated)
+  - id: 127000
+    title: "Asegurar que 'Implementar historial de contraseñas' está configurado como '24 o más contraseña(s)'."
+    description: "Esta configuración de política determina el número de contraseñas únicas que deben asociarse con una cuenta de usuario antes de que pueda reutilizarse una contraseña antigua. El valor para esta configuración de política debe estar entre 0 y 24 contraseñas. El valor predeterminado para Windows Vista es 0 contraseñas, pero la configuración predeterminada en un dominio es 24 contraseñas. Para mantener la efectividad de esta configuración de política, utilice la configuración de Antigüedad mínima de contraseña para evitar que los usuarios cambien repetidamente su contraseña. El estado recomendado para esta configuración es: 24 o más contraseña(s). Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory. Nota #2: A la fecha de publicación de este benchmark, Microsoft actualmente tiene un límite máximo de 24 contraseñas guardadas. Para más información, visite Implementar historial de contraseñas (Windows 10) - Seguridad de Windows | Microsoft Docs."
+    rationale: "Cuanto más tiempo utilice un usuario la misma contraseña, mayor será la posibilidad de que un atacante determine la contraseña mediante ataques de fuerza bruta. Además, cualquier cuenta que haya sido comprometida seguirá siendo explotable mientras no se cambie la contraseña. Si se requieren cambios de contraseña pero no se impide la reutilización de contraseñas, o si los usuarios reutilizan continuamente un pequeño número de contraseñas, la efectividad de una buena política de contraseñas se reduce considerablemente. Si especifica un número bajo para esta configuración de política, los usuarios podrán utilizar repetidamente el mismo pequeño número de contraseñas. Si tampoco configura la configuración de Antigüedad mínima de contraseña, los usuarios podrían cambiar repetidamente sus contraseñas hasta que puedan reutilizar su contraseña original."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 24 o más contraseña(s): Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de contraseñas\\Implementar historial de contraseñas."
+    references:
+      - https://www.cisecurity.org/white-papers/cis-password-policy-guide/
+    compliance:
+      - cis: ["1.1.1"]
+      - cis_csc_v8: ["5.2"]
+      - cis_csc_v7: ["16.2"]
+      - cmmc_v2.0: ["IA.L2-3.5.7"]
+      - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
+      - soc_2: ["CC6.1"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Duraci\S+n del historial de contrase\S+as:\s+(\d+) compare >= 24'
+
+  # 1.1.2 (L1) Ensure 'Maximum password age' is set to '365 or fewer days, but not 0'. (Automated)
+  #- id: 27001
+  #  title: "Asegurar que 'Antigüedad máxima de contraseña' está configurado como '365 días o menos, pero no 0'."
+  #  description: "Esta configuración de política define cuánto tiempo puede un usuario utilizar su contraseña antes de que caduque. Los valores para esta configuración de política van de 0 a 999 días. Si establece el valor a 0, la contraseña nunca caducará. Debido a que los atacantes pueden descifrar contraseñas, cuanto más frecuentemente se cambie la contraseña, menos oportunidad tendrá un atacante de utilizar una contraseña descifrada. Sin embargo, cuanto más bajo se establezca este valor, mayor será el potencial de aumentar las llamadas al servicio de asistencia técnica debido a usuarios que tienen que cambiar su contraseña u olvidan cuál es la contraseña actual. El estado recomendado para esta configuración es 365 días o menos, pero no 0. Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory."
+  #  rationale: "Cuanto más tiempo existe una contraseña, mayor es la probabilidad de que sea comprometida por un ataque de fuerza bruta, por un atacante que obtenga conocimiento general sobre el usuario, o por el usuario compartiendo la contraseña. Configurar la configuración de Antigüedad máxima de contraseña a 0 para que los usuarios nunca tengan que cambiar sus contraseñas es un riesgo de seguridad importante porque permite que una contraseña comprometida sea utilizada por el usuario malicioso durante todo el tiempo que el usuario válido tenga acceso autorizado."
+  #  impact: "Si la configuración de Antigüedad máxima de contraseña es demasiado baja, se requiere que los usuarios cambien sus contraseñas con mucha frecuencia. Tal configuración puede reducir la seguridad en la organización, porque los usuarios podrían escribir sus contraseñas en un lugar inseguro o perderlas. Si el valor para esta configuración de política es demasiado alto, el nivel de seguridad dentro de una organización se reduce porque permite a los atacantes potenciales más tiempo para descubrir contraseñas de usuario o utilizar cuentas comprometidas."
+  #  remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 365 días o menos, pero no 0: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de contraseñas\\Antigüedad máxima de contraseña."
+  #  references:
+  #    - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+  #  compliance:
+  #    - cis: ["1.1.2"]
+  #    - cis_csc_v8: ["5.2"]
+  #    - cis_csc_v7: ["16.10"]
+  #    - cmmc_v2.0: ["IA.L2-3.5.7"]
+  #    - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
+  #    - soc_2: ["CC6.1"]
+  #  condition: any
+  #  rules:
+  #    - 'c:net.exe accounts -> n:Duraci\S+n m\S+x. de contrase\S+a \(d\S+as\):\s+(\d+) compare < 90'
+  #    - 'c:net.exe accounts -> n:Duraci\S+n m\S+x. de contrase\S+a \(d\S+as\):\s+(\d+) compare != 42'
+  #    - 'c:net.exe accounts -> Duración máx. de contraseña (días):               Ilimitado'
+
+  # 1.1.3 (L1) Ensure 'Minimum password age' is set to '1 or more day(s)'. (Automated)
+  - id: 127002
+    title: "Asegurar que 'Antigüedad mínima de contraseña' está configurado como '1 o más día(s)'."
+    description: "Esta configuración de política determina el número de días que debe usar una contraseña antes de poder cambiarla. El rango de valores para esta configuración de política está entre 1 y 999 días. (También puede establecer el valor en 0 para permitir cambios inmediatos de contraseña). El valor predeterminado para esta configuración es 0 días. El estado recomendado para esta configuración es: 1 o más día(s). Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory."
+    rationale: "Los usuarios pueden tener contraseñas favoritas que les gusta usar porque son fáciles de recordar y creen que su elección de contraseña está segura de ser comprometida. Desafortunadamente, las contraseñas se comprometen y si un atacante está dirigiéndose a una cuenta de usuario específica, con conocimiento previo de datos sobre ese usuario, la reutilización de contraseñas antiguas puede causar una violación de seguridad. Para abordar la reutilización de contraseñas, se requiere una combinación de configuraciones de seguridad. El uso de esta configuración de política junto con la configuración Implementar historial de contraseñas evita la fácil reutilización de contraseñas antiguas. Por ejemplo, si configura la configuración Implementar historial de contraseñas para asegurar que los usuarios no puedan reutilizar ninguna de sus últimas 12 contraseñas, podrían cambiar su contraseña 13 veces en unos minutos y reutilizar la contraseña con la que comenzaron, a menos que también configure la configuración Antigüedad mínima de contraseña a un número mayor que 0. Debe configurar esta configuración de política a un número mayor que 0 para que la configuración Implementar historial de contraseñas sea efectiva."
+    impact: "Si un administrador establece una contraseña para un usuario pero quiere que ese usuario cambie la contraseña cuando el usuario inicie sesión por primera vez, el administrador debe seleccionar la casilla El usuario debe cambiar la contraseña en el próximo inicio de sesión, o el usuario no podrá cambiar la contraseña hasta el día siguiente."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 1 o más día(s): Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de contraseñas\\Antigüedad mínima de contraseña."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+    compliance:
+      - cis: ["1.1.3"]
+      - cis_csc_v8: ["5.2"]
+      - cis_csc_v7: ["16.10"]
+      - cmmc_v2.0: ["IA.L2-3.5.7"]
+      - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
+      - soc_2: ["CC6.1"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Duraci\S+n m\S+n. de contrase\S+a \(d\S+as\):\s+(\d+) compare >= 1'
+
+  # 1.1.4 (L1) Ensure 'Minimum password length' is set to '14 or more character(s)'. (Automated)
+  - id: 127003
+    title: "Asegurar que 'Longitud mínima de contraseña' está configurado como '14 o más caracteres'."
+    description: 'Esta configuración de política determina el menor número de caracteres que componen una contraseña para una cuenta de usuario. Existen muchas teorías diferentes sobre cómo determinar la mejor longitud de contraseña para una organización, pero quizás "frase de contraseña" es un mejor término que "contraseña". En Microsoft Windows 2000 y más recientes, las frases de contraseña pueden ser bastante largas e incluir espacios. Por lo tanto, una frase como "Quiero beber un batido de $5" es una frase de contraseña válida; es una contraseña considerablemente más fuerte que una cadena de 8 o 10 caracteres de números y letras aleatorios, y sin embargo es más fácil de recordar. Los usuarios deben ser educados sobre la selección y mantenimiento adecuados de contraseñas, especialmente con respecto a la longitud de contraseña. En entornos empresariales, el valor ideal para la configuración de Longitud mínima de contraseña es 14 caracteres, sin embargo, debe ajustar este valor para satisfacer los requisitos comerciales de su organización. El estado recomendado para esta configuración es: 14 o más caracteres. Nota: En Windows Server 2016 y versiones anteriores de Windows Server, la interfaz gráfica de usuario de la Política de seguridad local (LSP), el Editor de políticas de grupo local (LGPE) y el Editor de administración de políticas de grupo (GPME) no le permitían establecer este valor por encima de 14 caracteres. Sin embargo, a partir de Windows Server 2019, Microsoft cambió la interfaz gráfica para permitir hasta 20 caracteres de longitud mínima de contraseña. Nota #2: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory.'
+    rationale: "Los tipos de ataques de contraseña incluyen ataques de diccionario (que intentan usar palabras y frases comunes) y ataques de fuerza bruta (que prueban todas las combinaciones posibles de caracteres). Además, los atacantes a veces intentan obtener la base de datos de cuentas para poder usar herramientas que descubran las cuentas y contraseñas."
+    impact: "Los requisitos de contraseñas extremadamente largas pueden disminuir la seguridad de una organización, porque los usuarios podrían dejar la información en un lugar inseguro o perderla. Si se requieren contraseñas muy largas, las contraseñas mal escritas podrían causar bloqueos de cuentas y aumentar el volumen de llamadas al servicio de asistencia técnica. Si su organización tiene problemas con contraseñas olvidadas debido a requisitos de longitud de contraseña, considere enseñar a sus usuarios sobre frases de contraseña, que a menudo son más fáciles de recordar y, debido al mayor número de combinaciones de caracteres, mucho más difíciles de descubrir. Nota: Las versiones anteriores de Windows como Windows 98 y Windows NT 4.0 no admiten contraseñas que tengan más de 14 caracteres. Las computadoras que ejecutan estos sistemas operativos más antiguos no pueden autenticarse con computadoras o dominios que utilizan cuentas que requieren contraseñas largas."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 14 o más caracteres: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de contraseñas\\Longitud mínima de contraseña."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+    compliance:
+      - cis: ["1.1.4"]
+      - cis_csc_v8: ["5.2"]
+      - cis_csc_v7: ["4.4"]
+      - cmmc_v2.0: ["IA.L2-3.5.7"]
+      - iso_27001-2013: ["A.9.4.3"]
+      - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
+      - soc_2: ["CC6.1"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Longitud m\S+nima de contrase\S+a:\s+(\d+) compare >= 14'
+
+  # 1.1.5 (L1) Ensure 'Password must meet complexity requirements' is set to 'Enabled'. (Automated) - Not Implemented
+
+  # 1.1.6 (L1) Ensure 'Relax minimum password length limits' is set to 'Enabled'. (Automated)
+  - id: 127004
+    title: "Asegurar que 'Relajar los límites mínimos de longitud de la contraseña' esté establecido en 'Habilitado'."
+    description: "Esta configuración de política determina si la configuración de longitud mínima de la contraseña se puede aumentar más allá del límite heredado de 14 caracteres. Para obtener más información, consulte el siguiente blog de seguridad de Microsoft. El estado recomendado para esta configuración es: Habilitado. Nota: Esta configuración solo afecta a las cuentas locales en el equipo. Las cuentas de dominio solo se ven afectadas por la configuración en los controladores de dominio, porque ahí es donde se almacenan las cuentas de dominio."
+    rationale: "Esta configuración permitirá la aplicación de contraseñas o frases de contraseña más largas y generalmente más seguras donde no se utiliza MFA."
+    impact: "La configuración de Longitud mínima de la contraseña se puede configurar a más de 14 caracteres. Si se requieren contraseñas muy largas, las contraseñas mal escritas podrían causar bloqueos de cuentas y aumentar el volumen de llamadas al servicio de asistencia técnica. Si su organización tiene problemas con contraseñas olvidadas debido a los requisitos de longitud de la contraseña, considere enseñar a sus usuarios sobre frases de contraseña, que a menudo son más fáciles de recordar y, debido a la mayor cantidad de combinaciones de caracteres, mucho más difíciles de descubrir."
+    remediation: "Para establecer la configuración recomendada a través de GP, establezca la siguiente ruta de interfaz de usuario en Habilitado: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de contraseñas\\Relajar los límites mínimos de longitud de la contraseña Nota: Esta configuración solo está disponible dentro de la plantilla de seguridad del sistema operativo integrada de Windows 10 Release 2004 y Server 2022 (o más reciente), y no está disponible a través de versiones anteriores del sistema operativo, o a través de plantillas administrativas descargables (ADMX/ADML). Por lo tanto, debe usar un sistema Windows 10 Release 2004 o Server 2022 (o más reciente) para ver o editar esta configuración con la Consola de administración de directivas de grupo (GPMC) o el Editor de administración de directivas de grupo (GPME)."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+      - "https://support.microsoft.com/en-us/topic/minimum-password-length-auditing-and-enforcement-on-certain-versions-of-windows-5ef7fecf-3325-f56b-cc10-4fd565aacc59"
+    compliance:
+      - cis: ["1.1.6"]
+      - cis_csc_v8: ["5.2"]
+      - cis_csc_v7: ["4.4"]
+      - cmmc_v2.0: ["IA.L2-3.5.7"]
+      - iso_27001-2013: ["A.9.4.3"]
+      - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
+      - soc_2: ["CC6.1"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SAM'
+      - 'r:HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SAM -> RelaxMinimumPasswordLengthLimits'
+      - 'r:HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SAM -> RelaxMinimumPasswordLengthLimits -> 1'
+
+  # 1.1.7 (L1) Ensure 'Store passwords using reversible encryption' is set to 'Disabled'. (Automated) - Not Implemented
+
+  # 1.2.1 (L1) Ensure 'Account lockout duration' is set to '15 or more minute(s)'. (Automated)
+  - id: 127005
+    title: "Asegurar que 'Duración del bloqueo de cuenta' está configurado como '10 o más minuto(s)'."
+    description: "Esta configuración de política determina el tiempo que debe transcurrir antes de que una cuenta bloqueada se desbloquee y un usuario pueda intentar iniciar sesión nuevamente. La configuración hace esto especificando el número de minutos que una cuenta bloqueada permanecerá no disponible. Si el valor para esta configuración de política está configurado como 0, las cuentas bloqueadas permanecerán bloqueadas hasta que un administrador las desbloquee manualmente. Aunque podría parecer una buena idea configurar el valor para esta configuración de política a un valor alto, tal configuración probablemente aumentará el número de llamadas que el servicio de asistencia técnica recibe para desbloquear cuentas bloqueadas por error. Los usuarios deben ser conscientes del tiempo que un bloqueo permanece en vigor, para que se den cuenta de que solo necesitan llamar al servicio de asistencia técnica si tienen una necesidad extremadamente urgente de recuperar el acceso a su computadora. El estado recomendado para esta configuración es: 10 o más minuto(s). Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory."
+    rationale: "Se puede crear una condición de denegación de servicio (DoS) si un atacante abusa del Umbral de bloqueo de cuenta e intenta repetidamente iniciar sesión con una cuenta específica. Una vez que configure el ajuste Umbral de bloqueo de cuenta, la cuenta se bloqueará después del número especificado de intentos fallidos. Si configura el ajuste Duración del bloqueo de cuenta a 0, entonces la cuenta permanecerá bloqueada hasta que un administrador la desbloquee manualmente."
+    impact: "Aunque puede parecer una buena idea configurar esta política para que nunca desbloquee automáticamente una cuenta, tal configuración puede aumentar el número de solicitudes que el servicio de asistencia técnica de su organización recibe para desbloquear cuentas que fueron bloqueadas por error."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 10 o más minuto(s): Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de bloqueo de cuenta\\Duración del bloqueo de cuenta."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+    compliance:
+      - cis: ["1.2.1"]
+      - cis_csc_v8: ["4.10"]
+      - cis_csc_v7: ["16.11"]
+      - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
+      - iso_27001-2013: ["A.8.1.3"]
+      - pci_dss_v4.0: ["8.3.4"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Duraci\S+n de bloqueo \(minutos\):\s+(\d+) compare >= 10'
+
+  # 1.2.2 (L1) Ensure 'Account lockout threshold' is set to '5 or fewer invalid logon attempt(s), but not 0'. (Automated)
+  - id: 127006
+    title: "Asegurar que 'Umbral de bloqueo de cuenta' está configurado como '10 o menos intentos de inicio de sesión no válidos, pero no 0'."
+    description: "Esta configuración de política determina el número de intentos fallidos de inicio de sesión antes de que se bloquee la cuenta. Establecer esta política en 0 no se ajusta al benchmark, ya que hacerlo deshabilita el umbral de bloqueo de cuenta. El estado recomendado para esta configuración es: 5 o menos intentos de inicio de sesión no válidos, pero no 0. Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory."
+    rationale: "Establecer un umbral de bloqueo de cuenta reduce la probabilidad de que un ataque de fuerza bruta de contraseña en línea tenga éxito. Establecer el umbral de bloqueo de cuenta demasiado bajo introduce el riesgo de un aumento de bloqueos accidentales y/o que un actor malicioso bloquee intencionalmente las cuentas."
+    impact: "Si esta configuración de política está habilitada, una cuenta bloqueada no se podrá utilizar hasta que la restablezca un administrador o hasta que expire la duración del bloqueo de cuenta. Esta configuración puede generar llamadas adicionales al servicio de asistencia técnica. Si aplica esta configuración, un atacante podría causar una condición de denegación de servicio generando deliberadamente inicios de sesión fallidos para varios usuarios, por lo tanto, también debe configurar la Duración del bloqueo de cuenta a un valor relativamente bajo. Si configura el Umbral de bloqueo de cuenta en 0, existe la posibilidad de que el intento de un atacante de descubrir contraseñas con un ataque de fuerza bruta de contraseña pase desapercibido si no existe un mecanismo de auditoría robusto."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 5 o menos intentos de inicio de sesión no válidos, pero no 0: Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de bloqueo de cuenta\\Umbral de bloqueo de cuenta."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+    compliance:
+      - cis: ["1.2.2"]
+      - cis_csc_v8: ["4.10"]
+      - cis_csc_v7: ["16.11"]
+      - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
+      - iso_27001-2013: ["A.8.1.3"]
+      - pci_dss_v4.0: ["8.3.4"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Umbral de bloqueo:\s+(\d+) compare > 0'
+      - 'c:net.exe accounts -> n:Umbral de bloqueo:\s+(\d+) compare <= 10'
+
+  # 1.2.3 (L1) Ensure 'Allow Administrator account lockout' is set to 'Enabled'. (Manual) - Not Implemented
+
+  # 1.2.4 (L1) Ensure 'Reset account lockout counter after' is set to '15 or more minute(s)'. (Automated)
+  - id: 127007
+    title: "Asegurar que 'Restablecer contador de bloqueo de cuenta después de' está configurado como '10 o más minuto(s)'."
+    description: "Esta configuración de política determina el tiempo que debe transcurrir antes de que el umbral de bloqueo de cuenta se restablezca a cero. El valor predeterminado para esta configuración de política es No definido. Si se define el umbral de bloqueo de cuenta, este tiempo de restablecimiento debe ser menor o igual que el valor de la configuración Duración del bloqueo de cuenta. Si deja esta configuración de política en su valor predeterminado o configura el valor a un intervalo demasiado largo, su entorno podría ser vulnerable a un ataque de denegación de servicio (DoS). Un atacante podría realizar maliciosamente una serie de intentos fallidos de inicio de sesión en todas las cuentas de usuarios de la organización, lo que bloqueará sus cuentas. Si no se determinara ninguna política para restablecer el bloqueo de cuenta, sería una tarea manual para los administradores. Por el contrario, si se configura un valor de tiempo razonable para esta configuración de política, los usuarios estarían bloqueados durante un período establecido hasta que todas las cuentas se desbloqueen automáticamente. El estado recomendado para esta configuración es: 10 o más minuto(s). Nota: La configuración de la Política de contraseñas (sección 1.1) y la configuración de la Política de bloqueo de cuentas (sección 1.2) deben aplicarse a través del GPO de Política de dominio predeterminada para que estén globalmente en efecto en las cuentas de usuario del dominio como su comportamiento predeterminado. Si estas configuraciones se configuran en otro GPO, solo afectarán a las cuentas de usuario locales en las computadoras que reciben el GPO. Sin embargo, las excepciones personalizadas a las reglas predeterminadas de política de contraseñas y política de bloqueo de cuentas para usuarios y/o grupos específicos del dominio pueden definirse utilizando Objetos de configuración de contraseña (PSO), que están completamente separados de la Política de grupo y se configuran más fácilmente utilizando el Centro administrativo de Active Directory."
+    rationale: "Los usuarios pueden bloquearse accidentalmente de sus cuentas si escriben incorrectamente su contraseña varias veces. Para reducir la probabilidad de estos bloqueos accidentales, la configuración Restablecer contador de bloqueo de cuenta después de determina el número de minutos que deben transcurrir antes de que el contador que registra los intentos fallidos de inicio de sesión y activa los bloqueos se restablezca a 0."
+    impact: "Si no configura esta configuración de política o si el valor está configurado a un intervalo demasiado largo, podría ocurrir un ataque DoS. Un atacante podría intentar maliciosamente iniciar sesión en la cuenta de cada usuario numerosas veces y bloquear sus cuentas como se describe en los párrafos anteriores. Si no configura la configuración Restablecer contador de bloqueo de cuenta después de, los administradores tendrían que desbloquear manualmente todas las cuentas. Si configura esta configuración de política con un valor razonable, los usuarios estarían bloqueados durante algún período, después del cual sus cuentas se desbloquearían automáticamente. Asegúrese de notificar a los usuarios sobre los valores utilizados para esta configuración de política para que esperen a que expire el temporizador de bloqueo antes de llamar al servicio de asistencia técnica por su incapacidad para iniciar sesión."
+    remediation: "Para establecer la configuración recomendada a través de GP, configure la siguiente ruta de UI a 10 o más minuto(s): Configuración del equipo\\Políticas\\Configuración de Windows\\Configuración de seguridad\\Políticas de cuenta\\Política de bloqueo de cuenta\\Restablecer contador de bloqueo de cuenta después de."
+    references:
+      - "https://www.cisecurity.org/white-papers/cis-password-policy-guide/"
+    compliance:
+      - cis: ["1.2.4"]
+      - cis_csc_v8: ["4.10"]
+      - cis_csc_v7: ["16.5"]
+      - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
+      - iso_27001-2013: ["A.10.1.1", "A.13.1.1"]
+      - pci_dss_v4.0: ["8.3.4"]
+    condition: all
+    rules:
+      - 'c:net.exe accounts -> n:Ventana de obs. de bloqueo \(minutos\):\s+(\d+) compare >= 10'
+
+ # 2.3.7.4 (L1) Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'. (Automated)
+  - id: 126025
+    title: "Ensure 'Interactive logon: Machine inactivity limit' is set to '900 or fewer second(s), but not 0'."
+    description: "Windows notices inactivity of a logon session, and if the amount of inactive time exceeds the inactivity limit, then the screen saver will run, locking the session. The recommended state for this setting is: 900 or fewer second(s), but not 0. Note: A value of 0 does not conform to the benchmark as it disables the machine inactivity limit."
+    rationale: "If a user forgets to lock their computer when they walk away it's possible that a passerby will hijack it."
+    impact: "The screen saver will automatically activate when the computer has been unattended for the amount of time specified. The impact should be minimal since the screen saver is enabled by default."
+    remediation: "To establish the recommended configuration via GP, set the following UI path to 900 or fewer seconds, but not 0: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Machine inactivity limit."
+    references:
+      - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-machine-inactivity-limit'
+    compliance:
+      - cis: ["2.3.7.4"]
+      - cis_csc_v8: ["4.3"]
+      - cis_csc_v7: ["16.11"]
+      - cmmc_v2.0: ["AC.L2-3.1.10", "AC.L2-3.1.11"]
+      - hipaa: ["164.312(a)(2)(iii)"]
+      - iso_27001-2013: ["A.8.1.3"]
+      - nist_sp_800-53: ["AC-11", "AC-11(1)", "AC-12", "AC-2(5)"]
+      - pci_dss_v3.2.1: ["8.1.8"]
+      - pci_dss_v4.0: ["8.2.8"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System'
+      - 'r:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System -> InactivityTimeoutSecs'
+      - 'not r:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System -> InactivityTimeoutSecs -> 0'
+      - 'r:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System -> InactivityTimeoutSecs -> n:^(\d+) compare <= 900'
+
+ # 2.3.7.5 (L1) Configure 'Interactive logon: Message text for users attempting to log on'. (Automated)
+  - id: 126026
+    title: "Configure 'Interactive logon: Message text for users attempting to log on'."
+    description: "This policy setting specifies a text message that displays to users when they log on. Set the following group policy to a value that is consistent with the security and operational requirements of your organization."
+    rationale: "Displaying a warning message before logon may help prevent an attack by warning the attacker about the consequences of their misconduct before it happens. It may also help to reinforce corporate policy by notifying employees of the appropriate policy during the logon process. This text is often used for legal reasons-for example, to warn users about the rami"    
+    impact: "Users will have to acknowledge a dialog box containing the configured text before they can log on to the computer. Note: Windows Vista and Windows XP Professional support logon banners that can exceed 512 characters in length and that can also contain carriage-return line-feed sequences. However, Windows 2000-based clients cannot interpret and display these mes"
+    remediation: "To establish the recommended configuration via GP, configure the following UI path to a value that is consistent with the security and operational requirements of your organization: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Message text for users attempting to log on."
+    references:
+      - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-message-text-for-users-attempting-to-log-on'
+    compliance:
+      - cis: ["2.3.7.5"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system\legalnoticetext'
+ # 2.3.7.6 (L1) Configure 'Interactive logon: Message title for users attempting to log on'. (Automated)
+  - id: 126027
+    title: "Configure 'Interactive logon: Message title for users attempting to log on'."
+    description: "This policy setting specifies the text displayed in the title bar of the window that users see when they log on to the system. Configure this setting in a manner that is consistent with the security and operational requirements of your organization."
+    rationale: "Displaying a warning message before logon may help prevent an attack by warning the attacker about the consequences of their misconduct before it happens. It may also help to reinforce corporate policy by notifying employees of the appropriate policy during the logon process."
+    impact: "Users will have to acknowledge a dialog box with the configured title before they can log on to the computer."
+    remediation: "To establish the recommended configuration via GP, configure the following UI path to a value that is consistent with the security and operational requirements of your organization: Computer Configuration\\Policies\\Windows Settings\\Security Settings\\Local Policies\\Security Options\\Interactive logon: Message title for users attempting to log on."
+    references:
+      - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-message-title-for-users-attempting-to-log-on'
+    compliance:
+      - cis: ["2.3.7.6"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system\legalnoticecaption'
+
+ # 2.3.7.7 (L2) Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'. (Automated)
+  - id: 126028
+    title: "Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'."
+    references:
+      - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-number-of-previous-logons-to-cache-in-case-domain-controller-is-not-available'
+    compliance:
+      - cis: ["2.3.7.7"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon -> CachedLogonsCount'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon -> CachedLogonsCount -> n:^(\d+) compare <= 4'
+
+
+ # 2.3.7.7 (L2) Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'. (Automated)
+  - id: 200000
+    title: "Asegurarnos que Hybrid Sleep / Fast Startup esta desactivado"
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power -> HiberbootEnabled'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power -> HiberbootEnabled -> 0'
+
+  - id: 200001
+    title: "Asegurar que las actualizaciones automáticas de Windows están habilitadas."
+    description: "Esta comprobación verifica que la configuración de directiva de Windows Update establece la instalación automática de actualizaciones, comprobando el valor de la clave de registro de políticas de Windows Update. El estado recomendado para esta configuración es que las actualizaciones se descarguen e instalen automáticamente."
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AUOptions'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AUOptions -> 4'
+
+
+
+
+
+
+
+
