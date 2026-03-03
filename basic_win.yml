@@ -263,7 +263,7 @@ checks:
 
  # 2.3.7.7 (L2) Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'. (Automated)
   - id: 126028
-    title: "Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'."
+    title: "Asegurar que 'Inicio de sesión interactivo: Número de inicios de sesión anteriores que se almacenan en caché (en caso de que el controlador de dominio no esté disponible)' está configurado como '4 o menos inicios de sesión'."
     references:
       - 'https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/interactive-logon-number-of-previous-logons-to-cache-in-case-domain-controller-is-not-available'
     compliance:
