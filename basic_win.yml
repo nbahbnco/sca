@@ -108,7 +108,7 @@ checks:
       - cis_csc_v8: ["5.2"]
       - cis_csc_v7: ["4.4"]
       - cmmc_v2.0: ["IA.L2-3.5.7"]
-      - iso_27001-2013: ["A.9.4.3"]
+      - iso_27001-2022: ["A.9.4.3"]
       - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
       - soc_2: ["CC6.1"]
     condition: all
@@ -132,7 +132,7 @@ checks:
       - cis_csc_v8: ["5.2"]
       - cis_csc_v7: ["4.4"]
       - cmmc_v2.0: ["IA.L2-3.5.7"]
-      - iso_27001-2013: ["A.9.4.3"]
+      - iso_27001-2022: ["A.9.4.3"]
       - pci_dss_v4.0: ["2.2.2", "8.3.5", "8.3.6", "8.6.3"]
       - soc_2: ["CC6.1"]
     condition: all
@@ -157,7 +157,7 @@ checks:
       - cis_csc_v8: ["4.10"]
       - cis_csc_v7: ["16.11"]
       - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
-      - iso_27001-2013: ["A.8.1.3"]
+      - iso_27001-2022: ["A.8.1.3"]
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
@@ -177,7 +177,7 @@ checks:
       - cis_csc_v8: ["4.10"]
       - cis_csc_v7: ["16.11"]
       - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
-      - iso_27001-2013: ["A.8.1.3"]
+      - iso_27001-2022: ["A.8.1.3"]
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
@@ -200,7 +200,7 @@ checks:
       - cis_csc_v8: ["4.10"]
       - cis_csc_v7: ["16.5"]
       - cmmc_v2.0: ["AC.L2-3.1.8", "SC.L2-3.13.9"]
-      - iso_27001-2013: ["A.10.1.1", "A.13.1.1"]
+      - iso_27001-2022: ["A.10.1.1", "A.13.1.1"]
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
@@ -221,7 +221,7 @@ checks:
       - cis_csc_v7: ["16.11"]
       - cmmc_v2.0: ["AC.L2-3.1.10", "AC.L2-3.1.11"]
       - hipaa: ["164.312(a)(2)(iii)"]
-      - iso_27001-2013: ["A.8.1.3"]
+      - iso_27001-2022: ["A.8.1.3"]
       - nist_sp_800-53: ["AC-11", "AC-11(1)", "AC-12", "AC-2(5)"]
       - pci_dss_v3.2.1: ["8.1.8"]
       - pci_dss_v4.0: ["8.2.8"]
@@ -274,29 +274,435 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon -> CachedLogonsCount'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon -> CachedLogonsCount -> n:^(\d+) compare <= 4'
 
-
- # 2.3.7.7 (L2) Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'. (Automated)
+  # N-28 - Desactivar Hybrid Sleep / Fast Startup
   - id: 200000
-    title: "Asegurarnos que Hybrid Sleep / Fast Startup esta desactivado"
+    title: "Asegurar que Hybrid Sleep / Fast Startup está desactivado."
+    description: "Comprueba que el inicio rápido de Windows (Fast Startup / Hybrid Boot) está deshabilitado para evitar que el estado del sistema se almacene de forma que pueda debilitar controles de arranque seguro y cifrado."
+    compliance:
+      - iso_27001-2022: ["A.8.10", "A.8.11"]
     condition: all
     rules:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power'
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power -> HiberbootEnabled'
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power -> HiberbootEnabled -> 0'
 
+  # N-20 - Actualizaciones automáticas habilitadas
   - id: 200001
     title: "Asegurar que las actualizaciones automáticas de Windows están habilitadas."
     description: "Esta comprobación verifica que la configuración de directiva de Windows Update establece la instalación automática de actualizaciones, comprobando el valor de la clave de registro de políticas de Windows Update. El estado recomendado para esta configuración es que las actualizaciones se descarguen e instalen automáticamente."
+    compliance:
+      - iso_27001-2022: ["A.8.8", "A.8.9", "A.8.10"]
     condition: all
     rules:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AUOptions'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AUOptions -> 4'
 
+  # N-05 / CIS 1.1.5 - Complejidad de contraseñas habilitada
+  - id: 200002
+    title: "Asegurar que 'Las contraseñas deben cumplir los requisitos de complejidad' está habilitado."
+    description: "Comprueba que la directiva de seguridad 'Las contraseñas deben cumplir los requisitos de complejidad' está habilitada para obligar a usar mayúsculas, minúsculas, números y caracteres especiales en las contraseñas."
+    compliance:
+      - iso_27001-2022: ["A.5.17", "A.8.2"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> PasswordComplexity'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> PasswordComplexity -> 1'
 
+  # N-07 / CIS 1.1.7 - No almacenar contraseñas con cifrado reversible
+  - id: 200003
+    title: "Asegurar que 'Almacenar contraseñas usando cifrado reversible' está deshabilitado."
+    description: "Comprueba que la directiva de seguridad para almacenar contraseñas utilizando cifrado reversible está deshabilitada, evitando que las contraseñas se almacenen de forma que puedan recuperarse en texto claro."
+    compliance:
+      - iso_27001-2022: ["A.5.17", "A.8.2"]
+    condition: all
+    rules:
+      - 'c:secedit.exe /export /cfg %TEMP%\secpol.cfg'
+      - 'f:%TEMP%\secpol.cfg -> n:ClearTextPassword\s*=\s*(\d+) compare == 0'
 
+  # N-08 / CIS 1.2.3 - Permitir bloqueo de la cuenta Administrator
+  - id: 200004
+    title: "Asegurar que se permite el bloqueo de la cuenta Administrator."
+    description: "Comprueba que la directiva 'Permitir el bloqueo de la cuenta de administrador' está habilitada, de forma que la cuenta integrada Administrator también se bloquee tras múltiples intentos fallidos de inicio de sesión."
+    compliance:
+      - iso_27001-2022: ["A.8.2", "A.8.3"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> AllowAdministratorLockout'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> AllowAdministratorLockout -> 1'
 
+  # N-09 - Renombrar / deshabilitar Administrator y deshabilitar Guest
+  - id: 200005
+    title: "Asegurar que la cuenta Administrator está protegida y la cuenta Invitado está deshabilitada."
+    description: "Comprueba que la cuenta integrada Guest está deshabilitada y que la cuenta integrada Administrator está deshabilitada o renombrada según la política de la organización."
+    compliance:
+      - iso_27001-2022: ["A.8.2", "A.8.3"]
+    condition: all
+    rules:
+      - 'c:wmic useraccount where "Name='\''Guest'\''" get Name,Disabled'
+      - 'c:wmic useraccount where "Name='\''Guest'\''" get Name,Disabled -> Disabled\s+TRUE'
+      - 'c:wmic useraccount where "Name='\''Invitado'\''" get Name,Disabled'
+      - 'c:wmic useraccount where "Name='\''Invitado'\''" get Name,Disabled -> Disabled\s+TRUE'
+      - 'c:wmic useraccount where "Name='\''Convidado'\''" get Name,Disabled'
+      - 'c:wmic useraccount where "Name='\''Convidado'\''" get Name,Disabled -> Disabled\s+TRUE'
+      - 'c:wmic useraccount where "SID like '\''S-1-5-21-%-500'\''" get Name,Disabled'
+      - 'c:wmic useraccount where "SID like '\''S-1-5-21-%-500'\''" get Name,Disabled -> Disabled\s+TRUE|Name\s+[^A|a]dministrator'
 
+  # N-10 - Revisar pertenencia a grupos locales privilegiados
+  - id: 200006
+    title: "Asegurar que solo cuentas autorizadas pertenecen a los grupos locales privilegiados."
+    description: "Comprueba que no existen grupos o cuentas amplias (Everyone, Users, Domain Users) en grupos locales privilegiados como Administrators o Remote Desktop Users."
+    compliance:
+      - iso_27001-2022: ["A.5.18", "A.8.2"]
+    condition: all
+    rules:
+      - 'c:net.exe localgroup Administrators'
+      - 'c:net.exe localgroup Administrators -> not .*Everyone.*'
+      - 'c:net.exe localgroup Administrators -> not .*Users.*'
+      - 'c:net.exe localgroup Administradores'
+      - 'c:net.exe localgroup Administradores -> not .*Todos.*'
+      - 'c:net.exe localgroup Administradores -> not .*Usuarios.*'
+      - 'c:net.exe localgroup "Remote Desktop Users"'
+      - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Everyone.*'
+      - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Users.*'
+      - 'c:net.exe localgroup "Usuarios de escritorio remoto"'
+      - 'c:net.exe localgroup "Usuarios de escritorio remoto" -> not .*Todos.*'
+      - 'c:net.exe localgroup "Usuarios de escritorio remoto" -> not .*Usuarios.*'
 
+  # N-16 - Requerir Ctrl+Alt+Supr para iniciar sesión
+  - id: 200007
+    title: "Asegurar que se requiere Ctrl+Alt+Supr para iniciar sesión."
+    description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
+    compliance:
+      - iso_27001-2022: ["A.8.2"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
 
+  # N-17 - Ocultar último usuario que inició sesión
+  - id: 200008
+    title: "Asegurar que no se muestra el último usuario que inició sesión."
+    description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No mostrar el último nombre de usuario' está habilitada para evitar filtrar información de cuentas válidas."
+    compliance:
+      - iso_27001-2022: ["A.8.2", "A.8.3"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName -> 1'
+
+  # N-21 - Uso de WSUS/Intune u otro gestor centralizado
+  - id: 200009
+    title: "Asegurar que Windows Update está configurado para usar un servidor WSUS/gestor centralizado cuando aplique."
+    description: "Comprueba que el cliente Windows Update está configurado para utilizar un servidor WSUS u otra infraestructura de gestión centralizada de actualizaciones cuando así lo requiera la política corporativa."
+    compliance:
+      - iso_27001-2022: ["A.5.36", "A.8.9"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUServer'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUStatusServer'
+
+  # N-22 - Ausencia de parches críticos pendientes (enfoque básico por fecha de actualización)
+  - id: 200010
+    title: "Comprobar que no existen parches críticos pendientes durante largos periodos."
+    description: "Comprueba de forma básica que el historial de instalación de actualizaciones indica que se han instalado actualizaciones recientemente, lo que reduce la probabilidad de que haya parches críticos pendientes durante largos periodos."
+    compliance:
+      - iso_27001-2022: ["A.8.8", "A.8.9"]
+    condition: all
+    rules:
+      - 'c:powershell.exe -Command "Get-HotFix | Sort-Object -Property InstalledOn -Descending | Select-Object -First 1"'
+
+  # N-23 - Política de reinicio tras instalación de parches
+  - id: 200011
+    title: "Asegurar que existe una política de reinicio tras la instalación de parches."
+    description: "Comprueba que la configuración de Windows Update define un comportamiento de reinicio adecuado tras la instalación de actualizaciones, de acuerdo con la política corporativa."
+    compliance:
+      - iso_27001-2022: ["A.5.36", "A.8.9"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime'
+
+  # N-24 - Auditoría de eventos de seguridad activada
+  - id: 200012
+    title: "Asegurar que la auditoría de eventos de seguridad está activada."
+    description: "Comprueba que las categorías principales de auditoría (inicio/cierre de sesión, cambios de cuentas, directiva, etc.) están habilitadas para generar eventos de seguridad."
+    compliance:
+      - iso_27001-2022: ["A.8.15", "A.8.16"]
+    condition: all
+    rules:
+      - 'c:auditpol.exe /get /category:*'
+      - 'c:auditpol.exe /get /category:"Logon/Logoff" -> (Success|Éxito)'
+      - 'c:auditpol.exe /get /category:"Account Management" -> (Success|Éxito)'
+
+  # N-25 - Tamaño mínimo y retención del Security Event Log
+  - id: 200013
+    title: "Asegurar un tamaño mínimo y retención adecuada del registro de seguridad."
+    description: "Comprueba que el registro de eventos de seguridad tiene un tamaño mínimo configurado y una política de sobrescritura adecuada para evitar la pérdida prematura de eventos."
+    compliance:
+      - iso_27001-2022: ["A.8.15"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security -> MaxSize'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security -> MaxSize -> n:^(\d+) compare >= 20971520'
+
+  # N-26 - Protección de los logs de seguridad
+  - id: 200014
+    title: "Asegurar que el registro de seguridad está protegido frente a borrado no autorizado."
+    description: "Comprueba que el registro de eventos de seguridad está configurado para no permitir sobrescritura de eventos hasta que se haya alcanzado su tamaño máximo o que solo se sobrescriban cuando sea necesario, evitando borrados no autorizados."
+    compliance:
+      - iso_27001-2022: ["A.8.15", "A.8.16"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security -> Retention'
+
+  # N-27 - Sincronización de hora (NTP)
+  - id: 200015
+    title: "Asegurar que el servicio de hora de Windows está sincronizado con servidores NTP confiables."
+    description: "Comprueba que el servicio de hora de Windows (W32Time) está configurado para usar servidores NTP definidos, lo que ayuda a mantener una hora coherente para la correlación de eventos."
+    compliance:
+      - iso_27001-2022: ["A.8.15", "A.8.16"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters -> NtpServer'
+
+  # N-29 - Antimalware instalado, activo y actualizado (Microsoft Defender)
+  - id: 200016
+    title: "Comprobar que existe antimalware instalado, activo y actualizado."
+    description: "Comprueba, mediante Microsoft Defender, que hay un motor antimalware activo y con firmas actualizadas."
+    compliance:
+      - iso_27001-2022: ["A.8.7", "A.8.8"]
+    condition: all
+    rules:
+      - 'c:powershell.exe -Command "Get-MpComputerStatus"'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AMServiceEnabled\s+True'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntispywareEnabled\s+True'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntivirusEnabled\s+True'
+
+  # N-30 - Escaneos programados y protección en tiempo real
+  - id: 200017
+    title: "Asegurar que la protección en tiempo real y los escaneos programados están habilitados."
+    description: "Comprueba que la protección en tiempo real de antimalware está habilitada y que existe al menos una tarea de análisis programado."
+    compliance:
+      - iso_27001-2022: ["A.8.7"]
+    condition: all
+    rules:
+      - 'c:powershell.exe -Command "Get-MpPreference"'
+      - 'c:powershell.exe -Command "Get-MpPreference" -> DisableRealtimeMonitoring\s+False'
+
+  # N-31 - Control de aplicaciones (AppLocker/WDAC)
+  - id: 200018
+    title: "Comprobar que existe control de aplicaciones (AppLocker/WDAC) en equipos críticos."
+    description: "Comprueba que AppLocker o Windows Defender Application Control está configurado con al menos una regla activa para restringir la ejecución de aplicaciones."
+    compliance:
+      - iso_27001-2022: ["A.8.7", "A.8.9"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2'
+
+  # N-32 - Firewall de Windows habilitado en todos los perfiles
+  - id: 200019
+    title: "Asegurar que el Firewall de Windows está habilitado en todos los perfiles."
+    description: "Comprueba que el firewall de Windows está habilitado para los perfiles de dominio, privado y público."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: all
+    rules:
+      - 'c:netsh advfirewall show allprofiles'
+      - 'c:netsh advfirewall show allprofiles -> Estado\s+ON'
+
+  # N-33 - Solo puertos/servicios necesarios permitidos
+  - id: 200020
+    title: "Revisar que no existen reglas de firewall excesivamente permisivas."
+    description: "Comprueba que no existen reglas de firewall que permitan todo el tráfico entrante desde cualquier origen a cualquier puerto."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: all
+    rules:
+      - 'c:netsh advfirewall firewall show rule name=all'
+      - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+Any.*'
+
+  # N-34 - Deshabilitar SMBv1
+  - id: 200021
+    title: "Asegurar que SMBv1 está deshabilitado."
+    description: "Comprueba que el protocolo SMBv1 está deshabilitado en el servidor para reducir la superficie de ataque."
+    compliance:
+      - iso_27001-2022: ["A.8.21", "A.8.8"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 0'
+
+  # N-35 - Desactivar impresión sobre HTTP si no se necesita
+  - id: 200022
+    title: "Asegurar que la impresión sobre HTTP está deshabilitada si no se requiere."
+    description: "Comprueba que la característica de impresión sobre HTTP está deshabilitada cuando no es necesaria."
+    compliance:
+      - iso_27001-2022: ["A.8.21"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\HTTP'
+
+  # N-36 - Deshabilitar RDP si no se usa
+  - id: 200023
+    title: "Asegurar que RDP está deshabilitado cuando no se utiliza."
+    description: "Comprueba que el servicio de Escritorio remoto está deshabilitado si así lo define la política de la organización."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server -> fDenyTSConnections'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server -> fDenyTSConnections -> 1'
+
+  # N-37 - Si RDP se usa, forzar NLA y restringir a grupos específicos
+  - id: 200024
+    title: "Si RDP está habilitado, asegurar que usa NLA y está restringido a grupos específicos."
+    description: "Comprueba que, cuando el Escritorio remoto está habilitado, se exige autenticación a nivel de red (NLA) y que solo grupos autorizados tienen permisos para conectarse."
+    compliance:
+      - iso_27001-2022: ["A.8.2", "A.8.20"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp -> UserAuthentication'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp -> UserAuthentication -> 1'
+      - 'c:net.exe localgroup "Remote Desktop Users"'
+
+  # N-38 - Limitar intentos y orígenes de conexión RDP
+  - id: 200025
+    title: "Revisar la exposición y limitación de conexiones RDP."
+    description: "Comprueba que existen reglas de firewall restrictivas para el puerto 3389/TCP, limitando el origen de las conexiones RDP."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: all
+    rules:
+      - 'c:netsh advfirewall firewall show rule name=all'
+      - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+3389.*'
+
+  # N-39 - BitLocker habilitado en unidades de sistema y datos
+  - id: 200026
+    title: "Comprobar que BitLocker está habilitado en las unidades de sistema y datos."
+    description: "Comprueba que las unidades del sistema y de datos relevantes están protegidas mediante BitLocker."
+    compliance:
+      - iso_27001-2022: ["A.8.10", "A.8.11"]
+    condition: all
+    rules:
+      - 'c:manage-bde.exe -status'
+      - 'c:manage-bde.exe -status -> Estado de conversión\s+Completado|Percentage Encrypted\s+100%'
+
+  # N-40 - Política de claves de recuperación BitLocker
+  - id: 200027
+    title: "Asegurar que existe una política de claves de recuperación de BitLocker."
+    description: "Comprueba que las directivas de BitLocker especifican cómo y dónde se almacenan las claves de recuperación (por ejemplo, en AD o Azure AD)."
+    compliance:
+      - iso_27001-2022: ["A.8.11", "A.5.32"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\FVE'
+
+  # N-41 - Control de dispositivos USB (lectura sola o lista blanca)
+  - id: 200028
+    title: "Asegurar que existe control de dispositivos USB según la política corporativa."
+    description: "Comprueba que existen restricciones de acceso a almacenamiento extraíble mediante políticas de Windows."
+    compliance:
+      - iso_27001-2022: ["A.8.9", "A.8.12"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices'
+
+  # N-42 - Deshabilitar unidades ópticas / medios antiguos si no se usan
+  - id: 200029
+    title: "Comprobar que las unidades ópticas u otros medios antiguos están deshabilitados si no se utilizan."
+    description: "Comprueba que las unidades ópticas están deshabilitadas a nivel de controlador o política cuando así lo requiera la organización."
+    compliance:
+      - iso_27001-2022: ["A.8.9", "A.8.12"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\cdrom'
+
+  # N-43 - Exploit Protection (DEP, ASLR, etc.) con perfil corporativo
+  - id: 200030
+    title: "Comprobar que las mitigaciones de explotación (DEP, ASLR, etc.) están habilitadas."
+    description: "Comprueba que las mitigaciones de explotación a nivel de sistema están habilitadas conforme a un perfil corporativo."
+    compliance:
+      - iso_27001-2022: ["A.8.7", "A.8.8"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
+
+  # N-44 - Políticas de ejecución de PowerShell restringidas
+  - id: 200031
+    title: "Asegurar que las políticas de ejecución de PowerShell están restringidas."
+    description: "Comprueba que la política de ejecución de PowerShell en el equipo al menos es RemoteSigned, preferiblemente AllSigned."
+    compliance:
+      - iso_27001-2022: ["A.8.7", "A.8.15"]
+    condition: all
+    rules:
+      - 'c:powershell.exe -Command "Get-ExecutionPolicy -Scope LocalMachine"'
+      - 'c:powershell.exe -Command "Get-ExecutionPolicy -Scope LocalMachine" -> (RemoteSigned|AllSigned)'
+
+  # N-45 - Credential Guard / LSA Protection
+  - id: 200032
+    title: "Comprobar que Credential Guard / LSA Protection está habilitado cuando es posible."
+    description: "Comprueba que las claves de configuración de LSA Protection/Credential Guard están establecidas para proteger las credenciales en memoria."
+    compliance:
+      - iso_27001-2022: ["A.8.7", "A.8.11"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> LsaCfgFlags'
+
+  # N-46 - Deshabilitar servicios y funciones no utilizados
+  - id: 200033
+    title: "Revisar que servicios y características no utilizados están deshabilitados."
+    description: "Comprueba, de forma básica, que determinados servicios de alto riesgo definidos por la organización están deshabilitados."
+    compliance:
+      - iso_27001-2022: ["A.8.9", "A.8.21"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet -> Start -> 2'
+
+  # N-47 - Políticas de navegador
+  - id: 200034
+    title: "Comprobar que existen políticas de navegador corporativas aplicadas."
+    description: "Comprueba que existen claves de políticas para el navegador corporativo (por ejemplo, Microsoft Edge) para controlar extensiones, sitios restringidos, etc."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
+
+  # N-48 - Restringir instalación de software a administradores
+  - id: 200035
+    title: "Asegurar que solo los administradores pueden instalar software."
+    description: "Comprueba que las políticas de UAC e instalación limitan la instalación de software a cuentas administrativas."
+    compliance:
+      - iso_27001-2022: ["A.8.9", "A.5.36"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> EnableLUA'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> EnableLUA -> 1'
+
+  # N-49 - Deshabilitar telemetría no necesaria
+  - id: 200036
+    title: "Asegurar que la telemetría/diagnósticos está configurada al nivel mínimo requerido."
+    description: "Comprueba que el nivel de telemetría de Windows está configurado al mínimo aceptado por la política de privacidad de la organización."
+    compliance:
+      - iso_27001-2022: ["A.5.29", "A.8.12"]
+    condition: all
+    rules:
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection -> AllowTelemetry'
 
