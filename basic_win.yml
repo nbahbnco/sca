@@ -385,33 +385,34 @@ checks:
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
     compliance:
       - iso_27001-2022: ["A.8.2"]
-    condition: any
+    condition: none
     rules:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 1'
 
   # N-17 - Ocultar último usuario que inició sesión
-  - id: 200009
-    title: "Asegurar que no se muestra el último usuario que inició sesión."
-    description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No mostrar el último nombre de usuario' está habilitada para evitar filtrar información de cuentas válidas."
-    compliance:
-      - iso_27001-2022: ["A.8.2", "A.8.3"]
-    condition: all
-    rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName -> 1'
+  # - id: 200009
+  #   title: "Asegurar que no se muestra el último usuario que inició sesión."
+  #   description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No mostrar el último nombre de usuario' está habilitada para evitar filtrar información de cuentas válidas."
+  #   compliance:
+  #     - iso_27001-2022: ["A.8.2", "A.8.3"]
+  #   condition: all
+  #   rules:
+  #     - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+  #     - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName'
+  #     - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName -> 1'
 
   # N-21 - Uso de WSUS/Intune u otro gestor centralizado
   - id: 200010
-    title: "Asegurar que Windows Update está configurado para usar un servidor WSUS/gestor centralizado cuando aplique."
-    description: "Comprueba que el cliente Windows Update está configurado para utilizar un servidor WSUS u otra infraestructura de gestión centralizada de actualizaciones cuando así lo requiera la política corporativa."
+    title: "Asegurar que Windows Update está configurado para aplicar actualizaciones de manera programada."
+    description: "Comprueba que el cliente Windows Update está configurado para aplicar actualizaciones de manera programada, de acuerdo con la política corporativa."
     compliance:
       - iso_27001-2022: ["A.5.36", "A.8.9"]
-    condition: all
+    condition: any
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUServer'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUStatusServer'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> DeferFeatureUpdates'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> SetComplianceDeadline'
 
   # N-22 - Ausencia de parches críticos pendientes (enfoque básico por fecha de actualización)
   - id: 200011
