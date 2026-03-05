@@ -245,7 +245,7 @@ checks:
       - cis: ["2.3.7.5"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system\legalnoticetext'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system -> legalnoticetext'
  # 2.3.7.6 (L1) Configure 'Interactive logon: Message title for users attempting to log on'. (Automated)
   - id: 126027
     title: "Configurar 'Inicio de sesión interactivo: Título del mensaje para los usuarios que intentan iniciar sesión'."
@@ -259,7 +259,7 @@ checks:
       - cis: ["2.3.7.6"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system\legalnoticecaption'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system -> legalnoticecaption'
 
  # 2.3.7.7 (L2) Ensure 'Interactive logon: Number of previous logons to cache (in case domain controller is not available)' is set to '4 or fewer logon(s)'. (Automated)
   - id: 126028
