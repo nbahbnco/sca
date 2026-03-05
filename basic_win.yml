@@ -318,7 +318,7 @@ checks:
       - iso_27001-2022: ["A.5.17", "A.8.2"]
     condition: all
     rules:
-      - 'c:secedit.exe /export /cfg %TEMP%\secpol.cfg'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "ClearTextPassword"; Remove-Item $env:TEMP\secpol.cfg-> n:ClearTextPassword\s*=\s*(\d+) compare == 0'
       - 'f:%TEMP%\secpol.cfg -> n:ClearTextPassword\s*=\s*(\d+) compare == 0'
 
   # N-08 / CIS 1.2.3 - Permitir bloqueo de la cuenta Administrator
