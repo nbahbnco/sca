@@ -341,19 +341,19 @@ checks:
       - iso_27001-2022: ["A.8.2", "A.8.3"]
     condition: all
     rules:
-      - 'c:wmic useraccount where "Name='\''Guest'\''" get Name,Disabled'
-      - 'c:wmic useraccount where "Name='\''Guest'\''" get Name,Disabled -> Disabled\s+TRUE'
-      - 'c:wmic useraccount where "Name='\''Invitado'\''" get Name,Disabled'
-      - 'c:wmic useraccount where "Name='\''Invitado'\''" get Name,Disabled -> Disabled\s+TRUE'
-      - 'c:wmic useraccount where "Name='\''Convidado'\''" get Name,Disabled'
-      - 'c:wmic useraccount where "Name='\''Convidado'\''" get Name,Disabled -> Disabled\s+TRUE'
-      - 'c:wmic useraccount where "SID like '\''S-1-5-21-%-500'\''" get Name,Disabled'
-      - 'c:wmic useraccount where "SID like '\''S-1-5-21-%-500'\''" get Name,Disabled -> Disabled\s+TRUE|Name\s+[^A|a]dministrator'
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Guest'' and LocalAccount=true' | Select-Object Name,Disabled\""
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Guest'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Invitado'' and LocalAccount=true' | Select-Object Name,Disabled\""
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Invitado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Convidado'' and LocalAccount=true' | Select-Object Name,Disabled\""
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Convidado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'LocalAccount=true AND SID LIKE ''S-1-5-21-%-500''' | Select-Object Name,Disabled\""
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'LocalAccount=true AND SID LIKE ''S-1-5-21-%-500''' | Select-Object Name,Disabled\" -> Disabled\\s+True|Name\\s+[^A|a]dministrator"
 
-  # N-10 - Revisar pertenencia a grupos locales privilegiados
+  # N-10 - Revisar pertenencia al grupo Administrators
   - id: 200006
-    title: "Asegurar que solo cuentas autorizadas pertenecen a los grupos locales privilegiados."
-    description: "Comprueba que no existen grupos o cuentas amplias (Everyone, Users, Domain Users) en grupos locales privilegiados como Administrators o Remote Desktop Users."
+    title: "Asegurar que solo cuentas autorizadas pertenecen al grupo de administradores locales."
+    description: "Comprueba que no existen grupos o cuentas amplias (Everyone, Users, Domain Users) en el grupo local Administrators/Administradores."
     compliance:
       - iso_27001-2022: ["A.5.18", "A.8.2"]
     condition: all
@@ -364,6 +364,15 @@ checks:
       - 'c:net.exe localgroup Administradores'
       - 'c:net.exe localgroup Administradores -> not .*Todos.*'
       - 'c:net.exe localgroup Administradores -> not .*Usuarios.*'
+
+  # N-10 - Revisar pertenencia al grupo de Escritorio remoto
+  - id: 200007
+    title: "Asegurar que solo cuentas autorizadas pertenecen al grupo de Escritorio remoto."
+    description: "Comprueba que no existen grupos o cuentas amplias (Everyone, Users, Domain Users) en los grupos locales de acceso a Escritorio remoto."
+    compliance:
+      - iso_27001-2022: ["A.5.18", "A.8.2"]
+    condition: all
+    rules:
       - 'c:net.exe localgroup "Remote Desktop Users"'
       - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Everyone.*'
       - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Users.*'
@@ -372,7 +381,7 @@ checks:
       - 'c:net.exe localgroup "Usuarios de escritorio remoto" -> not .*Usuarios.*'
 
   # N-16 - Requerir Ctrl+Alt+Supr para iniciar sesión
-  - id: 200007
+  - id: 200008
     title: "Asegurar que se requiere Ctrl+Alt+Supr para iniciar sesión."
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
     compliance:
@@ -384,7 +393,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
 
   # N-17 - Ocultar último usuario que inició sesión
-  - id: 200008
+  - id: 200009
     title: "Asegurar que no se muestra el último usuario que inició sesión."
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No mostrar el último nombre de usuario' está habilitada para evitar filtrar información de cuentas válidas."
     compliance:
@@ -396,7 +405,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DontDisplayLastUserName -> 1'
 
   # N-21 - Uso de WSUS/Intune u otro gestor centralizado
-  - id: 200009
+  - id: 200010
     title: "Asegurar que Windows Update está configurado para usar un servidor WSUS/gestor centralizado cuando aplique."
     description: "Comprueba que el cliente Windows Update está configurado para utilizar un servidor WSUS u otra infraestructura de gestión centralizada de actualizaciones cuando así lo requiera la política corporativa."
     compliance:
@@ -408,7 +417,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUStatusServer'
 
   # N-22 - Ausencia de parches críticos pendientes (enfoque básico por fecha de actualización)
-  - id: 200010
+  - id: 200011
     title: "Comprobar que no existen parches críticos pendientes durante largos periodos."
     description: "Comprueba de forma básica que el historial de instalación de actualizaciones indica que se han instalado actualizaciones recientemente, lo que reduce la probabilidad de que haya parches críticos pendientes durante largos periodos."
     compliance:
@@ -418,7 +427,7 @@ checks:
       - 'c:powershell.exe -Command "Get-HotFix | Sort-Object -Property InstalledOn -Descending | Select-Object -First 1"'
 
   # N-23 - Política de reinicio tras instalación de parches
-  - id: 200011
+  - id: 200012
     title: "Asegurar que existe una política de reinicio tras la instalación de parches."
     description: "Comprueba que la configuración de Windows Update define un comportamiento de reinicio adecuado tras la instalación de actualizaciones, de acuerdo con la política corporativa."
     compliance:
@@ -429,7 +438,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime'
 
   # N-24 - Auditoría de eventos de seguridad activada
-  - id: 200012
+  - id: 200013
     title: "Asegurar que la auditoría de eventos de seguridad está activada."
     description: "Comprueba que las categorías principales de auditoría (inicio/cierre de sesión, cambios de cuentas, directiva, etc.) están habilitadas para generar eventos de seguridad."
     compliance:
@@ -441,7 +450,7 @@ checks:
       - 'c:auditpol.exe /get /category:"Account Management" -> (Success|Éxito)'
 
   # N-25 - Tamaño mínimo y retención del Security Event Log
-  - id: 200013
+  - id: 200014
     title: "Asegurar un tamaño mínimo y retención adecuada del registro de seguridad."
     description: "Comprueba que el registro de eventos de seguridad tiene un tamaño mínimo configurado y una política de sobrescritura adecuada para evitar la pérdida prematura de eventos."
     compliance:
@@ -453,7 +462,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security -> MaxSize -> n:^(\d+) compare >= 20971520'
 
   # N-26 - Protección de los logs de seguridad
-  - id: 200014
+  - id: 200015
     title: "Asegurar que el registro de seguridad está protegido frente a borrado no autorizado."
     description: "Comprueba que el registro de eventos de seguridad está configurado para no permitir sobrescritura de eventos hasta que se haya alcanzado su tamaño máximo o que solo se sobrescriban cuando sea necesario, evitando borrados no autorizados."
     compliance:
@@ -464,7 +473,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security -> Retention'
 
   # N-27 - Sincronización de hora (NTP)
-  - id: 200015
+  - id: 200016
     title: "Asegurar que el servicio de hora de Windows está sincronizado con servidores NTP confiables."
     description: "Comprueba que el servicio de hora de Windows (W32Time) está configurado para usar servidores NTP definidos, lo que ayuda a mantener una hora coherente para la correlación de eventos."
     compliance:
@@ -475,7 +484,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters -> NtpServer'
 
   # N-29 - Antimalware instalado, activo y actualizado (Microsoft Defender)
-  - id: 200016
+  - id: 200017
     title: "Comprobar que existe antimalware instalado, activo y actualizado."
     description: "Comprueba, mediante Microsoft Defender, que hay un motor antimalware activo y con firmas actualizadas."
     compliance:
@@ -488,7 +497,7 @@ checks:
       - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntivirusEnabled\s+True'
 
   # N-30 - Escaneos programados y protección en tiempo real
-  - id: 200017
+  - id: 200018
     title: "Asegurar que la protección en tiempo real y los escaneos programados están habilitados."
     description: "Comprueba que la protección en tiempo real de antimalware está habilitada y que existe al menos una tarea de análisis programado."
     compliance:
@@ -499,7 +508,7 @@ checks:
       - 'c:powershell.exe -Command "Get-MpPreference" -> DisableRealtimeMonitoring\s+False'
 
   # N-31 - Control de aplicaciones (AppLocker/WDAC)
-  - id: 200018
+  - id: 200019
     title: "Comprobar que existe control de aplicaciones (AppLocker/WDAC) en equipos críticos."
     description: "Comprueba que AppLocker o Windows Defender Application Control está configurado con al menos una regla activa para restringir la ejecución de aplicaciones."
     compliance:
@@ -509,7 +518,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2'
 
   # N-32 - Firewall de Windows habilitado en todos los perfiles
-  - id: 200019
+  - id: 200020
     title: "Asegurar que el Firewall de Windows está habilitado en todos los perfiles."
     description: "Comprueba que el firewall de Windows está habilitado para los perfiles de dominio, privado y público."
     compliance:
@@ -520,7 +529,7 @@ checks:
       - 'c:netsh advfirewall show allprofiles -> Estado\s+ON'
 
   # N-33 - Solo puertos/servicios necesarios permitidos
-  - id: 200020
+  - id: 200021
     title: "Revisar que no existen reglas de firewall excesivamente permisivas."
     description: "Comprueba que no existen reglas de firewall que permitan todo el tráfico entrante desde cualquier origen a cualquier puerto."
     compliance:
@@ -531,7 +540,7 @@ checks:
       - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+Any.*'
 
   # N-34 - Deshabilitar SMBv1
-  - id: 200021
+  - id: 200022
     title: "Asegurar que SMBv1 está deshabilitado."
     description: "Comprueba que el protocolo SMBv1 está deshabilitado en el servidor para reducir la superficie de ataque."
     compliance:
@@ -543,7 +552,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 0'
 
   # N-35 - Desactivar impresión sobre HTTP si no se necesita
-  - id: 200022
+  - id: 200023
     title: "Asegurar que la impresión sobre HTTP está deshabilitada si no se requiere."
     description: "Comprueba que la característica de impresión sobre HTTP está deshabilitada cuando no es necesaria."
     compliance:
@@ -553,7 +562,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\HTTP'
 
   # N-36 - Deshabilitar RDP si no se usa
-  - id: 200023
+  - id: 200024
     title: "Asegurar que RDP está deshabilitado cuando no se utiliza."
     description: "Comprueba que el servicio de Escritorio remoto está deshabilitado si así lo define la política de la organización."
     compliance:
@@ -565,7 +574,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server -> fDenyTSConnections -> 1'
 
   # N-37 - Si RDP se usa, forzar NLA y restringir a grupos específicos
-  - id: 200024
+  - id: 200025
     title: "Si RDP está habilitado, asegurar que usa NLA y está restringido a grupos específicos."
     description: "Comprueba que, cuando el Escritorio remoto está habilitado, se exige autenticación a nivel de red (NLA) y que solo grupos autorizados tienen permisos para conectarse."
     compliance:
@@ -578,7 +587,7 @@ checks:
       - 'c:net.exe localgroup "Remote Desktop Users"'
 
   # N-38 - Limitar intentos y orígenes de conexión RDP
-  - id: 200025
+  - id: 200026
     title: "Revisar la exposición y limitación de conexiones RDP."
     description: "Comprueba que existen reglas de firewall restrictivas para el puerto 3389/TCP, limitando el origen de las conexiones RDP."
     compliance:
@@ -589,7 +598,7 @@ checks:
       - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+3389.*'
 
   # N-39 - BitLocker habilitado en unidades de sistema y datos
-  - id: 200026
+  - id: 200027
     title: "Comprobar que BitLocker está habilitado en las unidades de sistema y datos."
     description: "Comprueba que las unidades del sistema y de datos relevantes están protegidas mediante BitLocker."
     compliance:
@@ -600,7 +609,7 @@ checks:
       - 'c:manage-bde.exe -status -> Estado de conversión\s+Completado|Percentage Encrypted\s+100%'
 
   # N-40 - Política de claves de recuperación BitLocker
-  - id: 200027
+  - id: 200028
     title: "Asegurar que existe una política de claves de recuperación de BitLocker."
     description: "Comprueba que las directivas de BitLocker especifican cómo y dónde se almacenan las claves de recuperación (por ejemplo, en AD o Azure AD)."
     compliance:
@@ -610,7 +619,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\FVE'
 
   # N-41 - Control de dispositivos USB (lectura sola o lista blanca)
-  - id: 200028
+  - id: 200029
     title: "Asegurar que existe control de dispositivos USB según la política corporativa."
     description: "Comprueba que existen restricciones de acceso a almacenamiento extraíble mediante políticas de Windows."
     compliance:
@@ -620,7 +629,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices'
 
   # N-42 - Deshabilitar unidades ópticas / medios antiguos si no se usan
-  - id: 200029
+  - id: 200030
     title: "Comprobar que las unidades ópticas u otros medios antiguos están deshabilitados si no se utilizan."
     description: "Comprueba que las unidades ópticas están deshabilitadas a nivel de controlador o política cuando así lo requiera la organización."
     compliance:
@@ -630,7 +639,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\cdrom'
 
   # N-43 - Exploit Protection (DEP, ASLR, etc.) con perfil corporativo
-  - id: 200030
+  - id: 200031
     title: "Comprobar que las mitigaciones de explotación (DEP, ASLR, etc.) están habilitadas."
     description: "Comprueba que las mitigaciones de explotación a nivel de sistema están habilitadas conforme a un perfil corporativo."
     compliance:
@@ -641,7 +650,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
 
   # N-44 - Políticas de ejecución de PowerShell restringidas
-  - id: 200031
+  - id: 200032
     title: "Asegurar que las políticas de ejecución de PowerShell están restringidas."
     description: "Comprueba que la política de ejecución de PowerShell en el equipo al menos es RemoteSigned, preferiblemente AllSigned."
     compliance:
@@ -652,7 +661,7 @@ checks:
       - 'c:powershell.exe -Command "Get-ExecutionPolicy -Scope LocalMachine" -> (RemoteSigned|AllSigned)'
 
   # N-45 - Credential Guard / LSA Protection
-  - id: 200032
+  - id: 200033
     title: "Comprobar que Credential Guard / LSA Protection está habilitado cuando es posible."
     description: "Comprueba que las claves de configuración de LSA Protection/Credential Guard están establecidas para proteger las credenciales en memoria."
     compliance:
@@ -663,7 +672,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> LsaCfgFlags'
 
   # N-46 - Deshabilitar servicios y funciones no utilizados
-  - id: 200033
+  - id: 200034
     title: "Revisar que servicios y características no utilizados están deshabilitados."
     description: "Comprueba, de forma básica, que determinados servicios de alto riesgo definidos por la organización están deshabilitados."
     compliance:
@@ -674,7 +683,7 @@ checks:
       - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet -> Start -> 2'
 
   # N-47 - Políticas de navegador
-  - id: 200034
+  - id: 200035
     title: "Comprobar que existen políticas de navegador corporativas aplicadas."
     description: "Comprueba que existen claves de políticas para el navegador corporativo (por ejemplo, Microsoft Edge) para controlar extensiones, sitios restringidos, etc."
     compliance:
@@ -684,7 +693,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge'
 
   # N-48 - Restringir instalación de software a administradores
-  - id: 200035
+  - id: 200036
     title: "Asegurar que solo los administradores pueden instalar software."
     description: "Comprueba que las políticas de UAC e instalación limitan la instalación de software a cuentas administrativas."
     compliance:
@@ -696,7 +705,7 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> EnableLUA -> 1'
 
   # N-49 - Deshabilitar telemetría no necesaria
-  - id: 200036
+  - id: 200037
     title: "Asegurar que la telemetría/diagnósticos está configurada al nivel mínimo requerido."
     description: "Comprueba que el nivel de telemetría de Windows está configurado al mínimo aceptado por la política de privacidad de la organización."
     compliance:
