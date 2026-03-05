@@ -385,11 +385,9 @@ checks:
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
     compliance:
       - iso_27001-2022: ["A.8.2"]
-    condition: all
+    condition: any
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 1'
 
   # N-17 - Ocultar último usuario que inició sesión
   - id: 200009
