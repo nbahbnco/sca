@@ -161,7 +161,8 @@ checks:
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
-      - 'c:net.exe accounts -> n:Duraci\S+n de bloqueo \(minutos\):\s+(\d+) compare >= 10'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutDuration"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutDuration = (\d+) compare >= 15'
+
 
   # 1.2.2 (L1) Ensure 'Account lockout threshold' is set to '5 or fewer invalid logon attempt(s), but not 0'. (Automated)
   - id: 127006
@@ -181,8 +182,8 @@ checks:
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
-      - 'c:net.exe accounts -> n:Umbral de bloqueo:\s+(\d+) compare > 0'
-      - 'c:net.exe accounts -> n:Umbral de bloqueo:\s+(\d+) compare <= 10'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutBadCount = (\d+) compare <= 5'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutBadCount = (\d+) compare > 0'
 
   # 1.2.3 (L1) Ensure 'Allow Administrator account lockout' is set to 'Enabled'. (Manual) - Not Implemented
 
@@ -385,9 +386,10 @@ checks:
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
     compliance:
       - iso_27001-2022: ["A.8.2"]
-    condition: none
+    condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 1'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
 
   # N-17 - Ocultar último usuario que inició sesión
   # - id: 200009
@@ -677,7 +679,7 @@ checks:
       - iso_27001-2022: ["A.8.9", "A.8.21"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet'
       - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet -> Start -> 2'
 
   # N-47 - Políticas de navegador
