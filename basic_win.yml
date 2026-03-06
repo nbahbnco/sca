@@ -537,7 +537,7 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { (Get-NetFirewallAddressFilter).RemoteAddress -eq 'Any' -and (Get-NetFirewallPortFilter).LocalPort -eq 'Any' -and (Get-NetFirewallPortFilter).Protocol -in @('TCP','UDP') } | Measure-Object).Count -eq 0"'
+      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { ($_ | Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' -and ($_ | Get-NetFirewallPortFilter).LocalPort -eq ''Any'' -and ($_ | Get-NetFirewallPortFilter).Protocol -in @(''TCP'',''UDP'') } | Measure-Object).Count -eq 0"'
   # N-34 - Deshabilitar SMBv1
   - id: 200022
     title: "Asegurar que SMBv1 está deshabilitado."
