@@ -525,7 +525,6 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\""
       - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Domain\\s+True"
       - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Private\\s+True"
       - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Public\\s+True"
@@ -538,8 +537,8 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\""
-      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\" -> not .*Any\\s+Any\\s+Any.*"
+      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { ($_ | Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' -and ($_ | Get-NetFirewallPortFilter).LocalPort -eq ''Any'' } | Measure-Object).Count -eq 0"'
+      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { ($_ | Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' -and ($_ | Get-NetFirewallPortFilter).LocalPort -eq ''Any'' } | Measure-Object).Count -eq 0" -> True'
 
   # N-34 - Deshabilitar SMBv1
   - id: 200022
@@ -596,8 +595,8 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\""
-      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\" -> not .*Any\\s+Any\\s+3389.*"
+      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { ($_ | Get-NetFirewallPortFilter).Protocol -eq ''TCP'' -and ($_ | Get-NetFirewallPortFilter).LocalPort -eq ''3389'' -and ($_ | Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' } | Measure-Object).Count -eq 0"'
+      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { ($_ | Get-NetFirewallPortFilter).Protocol -eq ''TCP'' -and ($_ | Get-NetFirewallPortFilter).LocalPort -eq ''3389'' -and ($_ | Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' } | Measure-Object).Count -eq 0" -> True'
 
   # N-39 - BitLocker habilitado en unidades de sistema y datos
   - id: 200027
@@ -607,7 +606,6 @@ checks:
       - iso_27001-2022: ["A.8.10", "A.8.11"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-BitLockerVolume | Select-Object -ExpandProperty VolumeStatus"'
       - 'c:powershell.exe -Command "Get-BitLockerVolume | Select-Object -ExpandProperty VolumeStatus" -> FullyEncrypted'
 
   # N-40 - Política de claves de recuperación BitLocker
