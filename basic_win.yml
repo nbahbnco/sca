@@ -607,8 +607,8 @@ checks:
       - iso_27001-2022: ["A.8.10", "A.8.11"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-BitLockerVolume"'
-      - 'c:powershell.exe -Command "Get-BitLockerVolume" -> VolumeStatus\s+FullyEncrypted'
+      - 'c:powershell.exe -Command "Get-BitLockerVolume | Select-Object -ExpandProperty VolumeStatus"'
+      - 'c:powershell.exe -Command "Get-BitLockerVolume | Select-Object -ExpandProperty VolumeStatus" -> FullyEncrypted'
 
   # N-40 - Política de claves de recuperación BitLocker
   - id: 200028
