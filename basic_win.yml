@@ -525,8 +525,10 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - 'c:netsh advfirewall show allprofiles'
-      - 'c:netsh advfirewall show allprofiles -> Estado\s+ON'
+      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\""
+      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Domain\\s+True"
+      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Private\\s+True"
+      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Public\\s+True"
 
   # N-33 - Solo puertos/servicios necesarios permitidos
   - id: 200021
@@ -536,8 +538,8 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - 'c:netsh advfirewall firewall show rule name=all'
-      - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+Any.*'
+      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\""
+      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\" -> not .*Any\\s+Any\\s+Any.*"
 
   # N-34 - Deshabilitar SMBv1
   - id: 200022
@@ -594,8 +596,8 @@ checks:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
     condition: all
     rules:
-      - 'c:netsh advfirewall firewall show rule name=all'
-      - 'c:netsh advfirewall firewall show rule name=all -> not .*Any\s+Any\s+3389.*'
+      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\""
+      - "c:powershell.exe -Command \"netsh advfirewall firewall show rule name=all\" -> not .*Any\\s+Any\\s+3389.*"
 
   # N-39 - BitLocker habilitado en unidades de sistema y datos
   - id: 200027
