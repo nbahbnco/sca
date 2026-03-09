@@ -182,7 +182,7 @@ checks:
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
-      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutBadCount = (\d+) compare <= 5'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutBadCount = (\d+) compare <= 10'
       - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutBadCount"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutBadCount = (\d+) compare > 0'
 
   # 1.2.3 (L1) Ensure 'Allow Administrator account lockout' is set to 'Enabled'. (Manual) - Not Implemented
