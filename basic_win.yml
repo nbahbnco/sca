@@ -358,13 +358,11 @@ checks:
       - iso_27001-2022: ["A.5.18", "A.8.2"]
     condition: all
     rules:
-      - 'c:net.exe localgroup Administrators'
       - 'c:net.exe localgroup Administrators -> not .*Everyone.*'
       - 'c:net.exe localgroup Administrators -> not .*Users.*'
-      - 'c:net.exe localgroup Administradores'
       - 'c:net.exe localgroup Administradores -> not .*Todos.*'
       - 'c:net.exe localgroup Administradores -> not .*Usuarios.*'
-
+ 
   # N-10 - Revisar pertenencia al grupo de Escritorio remoto
   - id: 200007
     title: "Asegurar que solo cuentas autorizadas pertenecen al grupo de Escritorio remoto."
@@ -543,9 +541,7 @@ checks:
       - iso_27001-2022: ["A.8.21", "A.8.8"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters'
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1'
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 0'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 1'
 
   # N-35 - Desactivar impresión sobre HTTP si no se necesita
   - id: 200023
