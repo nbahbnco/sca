@@ -373,7 +373,7 @@ checks:
       - iso_27001-2022: ["A.5.18", "A.8.2"]
     condition: all
     rules:
-      - 'c:net.exe localgroup "Remote Desktop Users"'
+      - 'c:powershell.exe -Command "Get-LocalGroupMember -Group \"Remote Desktop Users\""' 
       - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Everyone.*'
       - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Users.*'
       - 'c:net.exe localgroup "Usuarios de escritorio remoto"'
