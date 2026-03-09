@@ -388,7 +388,6 @@ checks:
       - iso_27001-2022: ["A.8.2"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
 
   # N-17 - Ocultar último usuario que inició sesión
