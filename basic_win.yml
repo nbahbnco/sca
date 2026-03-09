@@ -305,11 +305,10 @@ checks:
     description: "Comprueba que la directiva de seguridad 'Las contraseñas deben cumplir los requisitos de complejidad' está habilitada para obligar a usar mayúsculas, minúsculas, números y caracteres especiales en las contraseñas."
     compliance:
       - iso_27001-2022: ["A.5.17", "A.8.2"]
-    condition: all
+    condition: any
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa'
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> PasswordComplexity'
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> PasswordComplexity -> 1'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "MinimumPasswordLength"; Remove-Item $env:TEMP\secpol.cfg -> n:MinimumPasswordLength = (\d+) compare >= 14'
 
   # N-07 / CIS 1.1.7 - No almacenar contraseñas con cifrado reversible
   - id: 200003
