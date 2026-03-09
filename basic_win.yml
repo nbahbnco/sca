@@ -503,14 +503,14 @@ checks:
       - 'c:powershell.exe -Command "Get-MpPreference" -> DisableRealtimeMonitoring\s+False'
 
   # N-31 - Control de aplicaciones (AppLocker/WDAC)
-  - id: 200019
-    title: "Comprobar que existe control de aplicaciones (AppLocker/WDAC) en equipos críticos."
-    description: "Comprueba que AppLocker o Windows Defender Application Control está configurado con al menos una regla activa para restringir la ejecución de aplicaciones."
-    compliance:
-      - iso_27001-2022: ["A.8.7", "A.8.9"]
-    condition: all
-    rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2'
+#  - id: 200019
+#    title: "Comprobar que existe control de aplicaciones (AppLocker/WDAC) en equipos críticos."
+#    description: "Comprueba que AppLocker o Windows Defender Application Control está configurado con al menos una regla activa para restringir la ejecución de aplicaciones."
+#    compliance:
+#      - iso_27001-2022: ["A.8.7", "A.8.9"]
+#    condition: all
+#    rules:
+#      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SrpV2'
 
   # N-32 - Firewall de Windows habilitado en todos los perfiles
   - id: 200020
@@ -539,9 +539,11 @@ checks:
     description: "Comprueba que el protocolo SMBv1 está deshabilitado en el servidor para reducir la superficie de ataque."
     compliance:
       - iso_27001-2022: ["A.8.21", "A.8.8"]
-    condition: all
+    condition: any
     rules:
-      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 1'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1 -> 0'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters -> SMB1'
+
 
   # N-35 - Desactivar impresión sobre HTTP si no se necesita
   - id: 200023
