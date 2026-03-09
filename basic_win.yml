@@ -445,8 +445,8 @@ checks:
     condition: all
     rules:
       - 'c:auditpol.exe /get /category:*'
-      - 'c:auditpol.exe /get /category:"Logon/Logoff" -> (Success|Éxito)'
-      - 'c:auditpol.exe /get /category:"Account Management" -> (Success|Éxito)'
+      - 'c:auditpol.exe /get /category:* -> (Logon/Logoff|Inicio de sesión/cierre de sesión).*(Success|Éxito)'
+      - 'c:auditpol.exe /get /category:* -> (Account Management|Administración de cuentas).*(Success|Éxito)'
 
   # N-25 - Tamaño mínimo y retención del Security Event Log
   - id: 200014
@@ -490,7 +490,6 @@ checks:
       - iso_27001-2022: ["A.8.7", "A.8.8"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-MpComputerStatus"'
       - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AMServiceEnabled\s+True'
       - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntispywareEnabled\s+True'
       - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntivirusEnabled\s+True'
@@ -503,7 +502,6 @@ checks:
       - iso_27001-2022: ["A.8.7"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-MpPreference"'
       - 'c:powershell.exe -Command "Get-MpPreference" -> DisableRealtimeMonitoring\s+False'
 
   # N-31 - Control de aplicaciones (AppLocker/WDAC)
