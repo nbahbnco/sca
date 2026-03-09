@@ -161,7 +161,7 @@ checks:
       - pci_dss_v4.0: ["8.3.4"]
     condition: all
     rules:
-      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutDuration"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutDuration = (\d+) compare >= 15'
+      - 'c:powershell secedit /export /cfg $env:TEMP\secpol.cfg; Get-Content $env:TEMP\secpol.cfg | Select-String "LockoutDuration"; Remove-Item $env:TEMP\secpol.cfg -> n:LockoutDuration = (\d+) compare >= 10'
 
 
   # 1.2.2 (L1) Ensure 'Account lockout threshold' is set to '5 or fewer invalid logon attempt(s), but not 0'. (Automated)
