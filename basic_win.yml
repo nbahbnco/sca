@@ -339,16 +339,12 @@ checks:
     description: "Comprueba que la cuenta integrada Guest está deshabilitada y que la cuenta integrada Administrator está deshabilitada o renombrada según la política de la organización."
     compliance:
       - iso_27001-2022: ["A.8.2", "A.8.3"]
-    condition: all
+    condition: none
     rules:
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Guest'' and LocalAccount=true' | Select-Object Name,Disabled\""
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Guest'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Invitado'' and LocalAccount=true' | Select-Object Name,Disabled\""
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Invitado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Convidado'' and LocalAccount=true' | Select-Object Name,Disabled\""
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Convidado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+True"
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'LocalAccount=true AND SID LIKE ''S-1-5-21-%-500''' | Select-Object Name,Disabled\""
-      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'LocalAccount=true AND SID LIKE ''S-1-5-21-%-500''' | Select-Object Name,Disabled\" -> Disabled\\s+True|Name\\s+[^A|a]dministrator"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Guest'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+False"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Invitado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+False"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'Name=''Convidado'' and LocalAccount=true' | Select-Object Name,Disabled\" -> Disabled\\s+False"
+      - "c:powershell.exe -Command \"Get-CimInstance -ClassName Win32_UserAccount -Filter 'LocalAccount=true AND SID LIKE ''1-5-21-%-500''' | Select-OS-bject Name,Disabled\" -> Disabled\\s+False|Name\\s+[^A|a]dministrator"
 
   # N-10 - Revisar pertenencia al grupo Administrators
   - id: 200006
@@ -358,10 +354,10 @@ checks:
       - iso_27001-2022: ["A.5.18", "A.8.2"]
     condition: all
     rules:
-      - 'c:net.exe localgroup Administrators -> not .*Everyone.*'
-      - 'c:net.exe localgroup Administrators -> not .*Users.*'
-      - 'c:net.exe localgroup Administradores -> not .*Todos.*'
-      - 'c:net.exe localgroup Administradores -> not .*Usuarios.*'
+      - "not c:powershell.exe -Command \"Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name\" -> .*Everyone.*"
+      - "not c:powershell.exe -Command \"Get-LocalGroupMember -Group 'Administrators' | Select-Object -ExpandProperty Name\" -> .*Users.*"
+      - "not c:powershell.exe -Command \"Get-LocalGroupMember -Group 'Administradores' | Select-Object -ExpandProperty Name\" -> .*Todos.*"
+      - "not c:powershell.exe -Command \"Get-LocalGroupMember -Group 'Administradores' | Select-Object -ExpandProperty Name\" -> .*Usuarios.*"
  
   # N-10 - Revisar pertenencia al grupo de Escritorio remoto
   - id: 200007
@@ -371,12 +367,10 @@ checks:
       - iso_27001-2022: ["A.5.18", "A.8.2"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-LocalGroupMember -Group \"Remote Desktop Users\""' 
-      - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Everyone.*'
-      - 'c:net.exe localgroup "Remote Desktop Users" -> not .*Users.*'
-      - 'c:net.exe localgroup "Usuarios de escritorio remoto"'
-      - 'c:net.exe localgroup "Usuarios de escritorio remoto" -> not .*Todos.*'
-      - 'c:net.exe localgroup "Usuarios de escritorio remoto" -> not .*Usuarios.*'
+      - 'not c:net.exe localgroup "Remote Desktop Users" -> .*Everyone.*'
+      - 'not c:net.exe localgroup "Remote Desktop Users" -> .*Domain Users.*'
+      - 'not c:net.exe localgroup "Usuarios de escritorio remoto" -> .*Todos.*'
+      - 'not c:net.exe localgroup "Usuarios de escritorio remoto" -> .*Usuarios del dominio.*'
 
   # N-16 - Requerir Ctrl+Alt+Supr para iniciar sesión
   - id: 200008
@@ -408,10 +402,10 @@ checks:
       - iso_27001-2022: ["A.5.36", "A.8.9"]
     condition: any
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUServer'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> WUStatusServer'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> ConfigureDeadlineForFeatureUpdates'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> ConfigureDeadlineForQualityUpdates'
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> DeferFeatureUpdates'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> SetComplianceDeadline'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate -> DeferQualityUpdates'
 
   # N-22 - Ausencia de parches críticos pendientes (enfoque básico por fecha de actualización)
   - id: 200011
@@ -431,8 +425,7 @@ checks:
       - iso_27001-2022: ["A.5.36", "A.8.9"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime -> 0'
 
   # N-24 - Auditoría de eventos de seguridad activada
   - id: 200013
@@ -442,9 +435,8 @@ checks:
       - iso_27001-2022: ["A.8.15", "A.8.16"]
     condition: all
     rules:
-      - 'c:auditpol.exe /get /category:*'
-      - 'c:auditpol.exe /get /category:* -> (Logon/Logoff|Inicio de sesión/cierre de sesión).*(Success|Éxito)'
-      - 'c:auditpol.exe /get /category:* -> (Account Management|Administración de cuentas).*(Success|Éxito)'
+      - 'c:auditpol.exe /get /category:* -> (Logon/Logoff|Inicio de sesión/cierre de sesión).*(Success and Failures|Aciertos y errores)'
+      - 'c:auditpol.exe /get /category:* -> (Account Management|Administración de cuentas).*(Success and Failures|Aciertos y errores)'
 
   # N-25 - Tamaño mínimo y retención del Security Event Log
   - id: 200014
@@ -488,9 +480,9 @@ checks:
       - iso_27001-2022: ["A.8.7", "A.8.8"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AMServiceEnabled\s+True'
-      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntispywareEnabled\s+True'
-      - 'c:powershell.exe -Command "Get-MpComputerStatus" -> AntivirusEnabled\s+True'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AMServiceEnabled" -> AMServiceEnabled\s*:\s*True'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AntispywareEnabled" -> AntispywareEnabled\s*:\s*True'
+      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AntivirusEnabled" -> AntivirusEnabled\s*:\s*True'
 
   # N-30 - Escaneos programados y protección en tiempo real
   - id: 200018
@@ -500,7 +492,7 @@ checks:
       - iso_27001-2022: ["A.8.7"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-MpPreference" -> DisableRealtimeMonitoring\s+False'
+      - 'c:powershell.exe -Command "Get-MpPreference" | Select-Object DisableRealtimeMonitoring -> DisableRealtimeMonitoring\s*:\s*False'
 
   # N-31 - Control de aplicaciones (AppLocker/WDAC)
 #  - id: 200019
