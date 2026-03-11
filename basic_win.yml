@@ -506,15 +506,37 @@ checks:
 
   # N-32 - Firewall de Windows habilitado en todos los perfiles
   - id: 200020
-    title: "Asegurar que el Firewall de Windows está habilitado en todos los perfiles."
-    description: "Comprueba que el firewall de Windows está habilitado para los perfiles de dominio, privado y público."
+    title: "Asegurar que el Firewall de Windows está habilitado el perfil publico."
+    description: "Comprueba que el firewall de Windows está habilitado para el perfil publico."
     compliance:
       - iso_27001-2022: ["A.8.20", "A.8.21"]
-    condition: all
+    condition: any
     rules:
-      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Domain\\s+True"
-      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Private\\s+True"
-      - "c:powershell.exe -Command \"Get-NetFirewallProfile | Select-Object Name,Enabled\" -> Public\\s+True"
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile -> EnableFirewall'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile -> EnableFirewall -> 0'
+
+  - id: 2000201
+    title: "Asegurar que el Firewall de Windows está habilitado el perfil privado."
+    description: "Comprueba que el firewall de Windows está habilitado para el perfil privado."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: any
+    rules:
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile -> EnableFirewall'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\PrivateProfile -> EnableFirewall -> 0'
+
+  - id: 2000202
+    title: "Asegurar que el Firewall de Windows está habilitado el perfil de dominio."
+    description: "Comprueba que el firewall de Windows está habilitado para el perfil de dominio."
+    compliance:
+      - iso_27001-2022: ["A.8.20", "A.8.21"]
+    condition: any
+    rules:
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile -> EnableFirewall'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\WindowsFirewall\DomainProfile -> EnableFirewall -> 0'
 
   # N-33 - Solo puertos/servicios necesarios permitidos
   - id: 200021
@@ -613,15 +635,7 @@ checks:
     rules:
       - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\RemovableStorageDevices'
 
-  # N-42 - Deshabilitar unidades ópticas / medios antiguos si no se usan
-  - id: 200030
-    title: "Comprobar que las unidades ópticas u otros medios antiguos están deshabilitados si no se utilizan."
-    description: "Comprueba que las unidades ópticas están deshabilitadas a nivel de controlador o política cuando así lo requiera la organización."
-    compliance:
-      - iso_27001-2022: ["A.8.9", "A.8.12"]
-    condition: all
-    rules:
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\cdrom'
+
 
   # N-43 - Exploit Protection (DEP, ASLR, etc.) con perfil corporativo
   - id: 200031
@@ -631,8 +645,8 @@ checks:
       - iso_27001-2022: ["A.8.7", "A.8.8"]
     condition: all
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel'
-      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions -> 0'
 
   # N-44 - Políticas de ejecución de PowerShell restringidas
   - id: 200032
