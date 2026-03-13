@@ -586,16 +586,6 @@ checks:
       - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp -> UserAuthentication -> 1'
       - 'c:net.exe localgroup "Remote Desktop Users"'
 
-  # N-38 - Limitar intentos y orígenes de conexión RDP
-  - id: 200026
-    title: "Revisar la exposición y limitación de conexiones RDP."
-    description: "Comprueba que existen reglas de firewall restrictivas para el puerto 3389/TCP, limitando el origen de las conexiones RDP."
-    compliance:
-      - iso_27001-2022: ["A.8.20", "A.8.21"]
-    condition: all
-    rules:
-      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { (Get-NetFirewallPortFilter).Protocol -eq ''TCP'' -and (Get-NetFirewallPortFilter).LocalPort -eq ''3389'' -and (Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' } | Measure-Object).Count -eq 0"'
-      - 'c:powershell.exe -Command "(Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow | Where-Object { (Get-NetFirewallPortFilter).Protocol -eq ''TCP'' -and (Get-NetFirewallPortFilter).LocalPort -eq ''3389'' -and (Get-NetFirewallAddressFilter).RemoteAddress -eq ''Any'' } | Measure-Object).Count -eq 0" -> True'
 
   # N-39 - BitLocker habilitado en unidades de sistema y datos
   - id: 200027
@@ -637,7 +627,8 @@ checks:
       - iso_27001-2022: ["A.8.7", "A.8.8"]
     condition: all
     rules:
-      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions'
       - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel -> MitigationOptions -> 0'
 
   # N-44 - Políticas de ejecución de PowerShell restringidas
@@ -658,7 +649,9 @@ checks:
       - iso_27001-2022: ["A.8.7", "A.8.11"]
     condition: all
     rules:
-      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> LsaCfgFlags -> 0'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> LsaCfgFlags'
+      - 'r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa -> LsaCfgFlags -> 1'
 
   # N-46 - Deshabilitar servicios y funciones no utilizados
   - id: 200034
@@ -666,8 +659,9 @@ checks:
     description: "Comprueba, de forma básica, que determinados servicios de alto riesgo definidos por la organización están deshabilitados."
     compliance:
       - iso_27001-2022: ["A.8.9", "A.8.21"]
-    condition: all
+    condition: any
     rules:
+      - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet'
       - 'not r:HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Telnet -> Start -> 2'
 
   # N-47 - Políticas de navegador
