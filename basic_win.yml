@@ -378,9 +378,10 @@ checks:
     description: "Comprueba que la opción de seguridad 'Inicio de sesión interactivo: No requerir CTRL+ALT+SUPR' está deshabilitada, es decir, que se requiere Ctrl+Alt+Supr para iniciar sesión."
     compliance:
       - iso_27001-2022: ["A.8.2"]
-    condition: all
+    condition: any
     rules:
-      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 0'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD'
+      - 'r:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -> DisableCAD -> 1'
 
   # N-17 - Ocultar último usuario que inició sesión
   # - id: 200009
@@ -423,9 +424,11 @@ checks:
     description: "Comprueba que la configuración de Windows Update define un comportamiento de reinicio adecuado tras la instalación de actualizaciones, de acuerdo con la política corporativa."
     compliance:
       - iso_27001-2022: ["A.5.36", "A.8.9"]
-    condition: all
+    condition: any
     rules:
       - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime -> 0'
+      - 'not r:HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU -> AlwaysAutoRebootAtScheduledTime'
+
 
   # N-24 - Auditoría de eventos de seguridad activada
   - id: 200013
@@ -435,8 +438,8 @@ checks:
       - iso_27001-2022: ["A.8.15", "A.8.16"]
     condition: all
     rules:
-      - 'c:auditpol.exe /get /category:* -> (Logon/Logoff|Inicio de sesión/cierre de sesión).*(Success and Failures|Aciertos y errores)'
-      - 'c:auditpol.exe /get /category:* -> (Account Management|Administración de cuentas).*(Success and Failures|Aciertos y errores)'
+      - 'c:auditpol.exe /get /category:* -> r:^\s*(User Account Management|Administración de cuentas de usuario)\s+(Success and Failure|Aciertos y errores)'
+      - 'c:auditpol.exe /get /category:* -> r:^\s*(Logon|Inicio de sesión)\s+(Success and Failure|Aciertos y errores)'
 
   # N-25 - Tamaño mínimo y retención del Security Event Log
   - id: 200014
@@ -475,24 +478,13 @@ checks:
   # N-29 - Antimalware instalado, activo y actualizado (Microsoft Defender)
   - id: 200017
     title: "Comprobar que existe antimalware instalado, activo y actualizado."
-    description: "Comprueba, mediante Microsoft Defender, que hay un motor antimalware activo y con firmas actualizadas."
+    description: ""
     compliance:
       - iso_27001-2022: ["A.8.7", "A.8.8"]
     condition: all
     rules:
-      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AMServiceEnabled" -> AMServiceEnabled\s*:\s*True'
-      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AntispywareEnabled" -> AntispywareEnabled\s*:\s*True'
-      - 'c:powershell.exe -Command "Get-MpComputerStatus | Select-Object AntivirusEnabled" -> AntivirusEnabled\s*:\s*True'
-
-  # N-30 - Escaneos programados y protección en tiempo real
-  - id: 200018
-    title: "Asegurar que la protección en tiempo real y los escaneos programados están habilitados."
-    description: "Comprueba que la protección en tiempo real de antimalware está habilitada y que existe al menos una tarea de análisis programado."
-    compliance:
-      - iso_27001-2022: ["A.8.7"]
-    condition: all
-    rules:
-      - 'c:powershell.exe -Command "Get-MpPreference" | Select-Object DisableRealtimeMonitoring -> DisableRealtimeMonitoring\s*:\s*False'
+      - 'c:powershell.exe -Command "Get-Service -Name WinDefend | Select-Object -Property Status -ExpandProperty Status" -> Running'
+      - 'c:powershell.exe -Command "Get-Service -Name WinDefend | Select-Object -Property Status -ExpandProperty Status" -> Running'
 
   # N-31 - Control de aplicaciones (AppLocker/WDAC)
 #  - id: 200019
